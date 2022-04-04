@@ -27,7 +27,7 @@ class Lidar():
             except:
                 self.horizontal_windspeed_list.append("one value is missing")
 
-        while True:
+        while self.client.open() == True:
             self.output_Met_station()
             #pulling live-data from Lidar-Unit
             print(self.get_live_windspeed()) #the live_windspeed and the corresponding height is measured every 10 seconds
