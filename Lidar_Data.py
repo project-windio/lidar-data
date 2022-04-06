@@ -3,7 +3,6 @@ import json
 import struct
 from pyModbusTCP.client import ModbusClient
 from time import sleep
-from calendar import monthrange
 from datetime import datetime, timezone, timedelta
 
 class Lidar():
@@ -12,7 +11,7 @@ class Lidar():
         #the dictionary contains the Modbus register numbers to the specific keys
         self.Met_station_dic = {"temperature":20,"battery":18, "airPressure": 22, "windspeed": 32, "tilt":42, "humidity":24}
         self.horizontal_windspeed_dic = {"height1":2 ,"height2":258, "height3":514, "height4":770, "height5":1026, "height6":1282,
-                                        "height7":1538, "height8":1894, "height9":2050, "height10":2307,"height11":4098}
+                                        "height7":1538, "height8":1794, "height9":2050, "height10":2306,"height11":2562}
         self.horizontal_windspeed_list = []
         #check if connection is established or failed
         if self.client.open() == True:
@@ -27,12 +26,18 @@ class Lidar():
             except:
                 self.horizontal_windspeed_list.append("one value is missing")
 
-        while self.client.open() == True:
-            self.output_Met_station()
+
+        while self.client.open() == True: #as long as the connection is established the following methods will be called
+            time = 0
             #pulling live-data from Lidar-Unit
-            print(self.get_live_windspeed()) #the live_windspeed and the corresponding height is measured every 10 seconds
-            print(self.get_live_height()) #this function returns the corresponding height to the windspeed --> TODO Height is not changing yet
-            sleep(10)
+            print(self.get_live_windspeed()) #the live_windspeed and the corresponding height
+            print(self.get_live_height()) #this function returns the corresponding height to the windspeed --> TODO height is not changing yet
+            self.json_data()
+            time += 1
+            if time >= 10:
+                self.output_Met_station()
+                time = 0
+            sleep(1)
 
     # this method outputs data from the MET-Station
     def output_Met_station(self):
@@ -104,6 +109,7 @@ class Lidar():
             else:
                 self.timestamp_dic["TS_bottom"] = self.dec_to_float(self.timestampBottom[0],self.timestampBottom[1])
         timestamp_add = self.timestamp_dic["TS_top"] + self.timestamp_dic["TS_bottom"]
+        print(timestamp_add,"timestamp_add")
 
         year_stamp = timestamp_add / 60 / 60 / 24 / 31 / 12
         year_cal = str(year_stamp).split(".")
@@ -112,7 +118,7 @@ class Lidar():
         month_cal = self.cal_date(12, year_cal)
         month = month_cal[0]
 
-        day_cal = self.cal_date(monthrange(int(year), int(month))[1], month_cal)
+        day_cal = self.cal_date(31, month_cal)
         day = day_cal[0]
 
         hour_cal = self.cal_date(24, day_cal)
