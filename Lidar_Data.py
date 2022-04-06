@@ -26,12 +26,12 @@ class Lidar():
             except:
                 self.horizontal_windspeed_list.append("one value is missing")
 
-
+        time = 0
         while self.client.open() == True: #as long as the connection is established the following methods will be called
-            time = 0
             #pulling live-data from Lidar-Unit
             print(self.get_live_windspeed()) #the live_windspeed and the corresponding height
             print(self.get_live_height()) #this function returns the corresponding height to the windspeed --> TODO height is not changing yet
+            print(self.get_MET_station_data(0),"associated reference")
             self.json_data()
             time += 1
             if time >= 10:
@@ -133,6 +133,7 @@ class Lidar():
         tz = timezone(timedelta(hours=0))
         timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second), tzinfo=tz)
         return timestamp
+
 
     def cal_date(self,factor, decimal):
         stamp = float("0." + str(decimal[1])) * factor
