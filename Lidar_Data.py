@@ -29,9 +29,7 @@ class Lidar():
         time = 0
         while self.client.open() == True: #as long as the connection is established the following methods will be called
             #pulling live-data from Lidar-Unit
-            print(self.get_live_windspeed()) #the live_windspeed and the corresponding height
-            print(self.get_live_height()) #this function returns the corresponding height to the windspeed --> TODO height is not changing yet
-            print(self.get_MET_station_data(0),"associated reference")
+            print(self.get_live_windspeed(),"[m/s]", self.get_live_height(),"[m]", self.get_MET_station_data(0), "reference of dataset", self.get_time_stamp() )
             self.json_data()
             time += 1
             if time >= 10:
@@ -109,7 +107,6 @@ class Lidar():
             else:
                 self.timestamp_dic["TS_bottom"] = self.dec_to_float(self.timestampBottom[0],self.timestampBottom[1])
         timestamp_add = self.timestamp_dic["TS_top"] + self.timestamp_dic["TS_bottom"]
-        print(timestamp_add,"timestamp_add")
 
         year_stamp = timestamp_add / 60 / 60 / 24 / 31 / 12
         year_cal = str(year_stamp).split(".")
