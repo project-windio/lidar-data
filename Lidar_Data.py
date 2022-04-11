@@ -30,7 +30,6 @@ class Lidar():
         while self.client.open() == True: #as long as the connection is established the following methods will be called
             #pulling live-data from Lidar-Unit
             print(self.get_MET_station_data(0), "reference of dataset", self.get_time_stamp() )
-            self.json_data()
             time += 1
             if time >= 10:
                 self.output_Met_station()
