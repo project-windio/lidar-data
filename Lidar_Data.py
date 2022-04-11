@@ -29,13 +29,15 @@ class Lidar():
         time = 0
         while self.client.open() == True: #as long as the connection is established the following methods will be called
             #pulling live-data from Lidar-Unit
-            print(self.get_live_windspeed(),"[m/s]", self.get_live_height(),"[m]", self.get_MET_station_data(0), "reference of dataset", self.get_time_stamp() )
+            print(self.get_MET_station_data(0), "reference of dataset", self.get_time_stamp() )
             self.json_data()
             time += 1
             if time >= 10:
                 self.output_Met_station()
+                self.json_data()
                 time = 0
             sleep(1)
+
 
     # this method outputs data from the MET-Station
     def output_Met_station(self):
@@ -76,20 +78,6 @@ class Lidar():
             if i == None:
                 return False
         return self.dec_to_float(hex[0],hex[1])
-
-    def get_live_windspeed(self):
-        hex = self.client.read_input_registers(2, 2)
-        for i in hex:
-            if i == None:
-                return False
-        return self.dec_to_float(hex[0], hex[1])
-
-    def get_live_height(self):
-        hex = self.client.read_input_registers(12, 2)
-        for i in hex:
-            if i == None:
-                return False
-        return self.dec_to_float(hex[0], hex[1])
 
     def get_time_stamp(self):
         self.timestamp_dic = {"TS_top": None ,"TS_bottom":None }
