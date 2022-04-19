@@ -27,27 +27,39 @@ class Lidar():
                 self.horizontal_windspeed_list.append("one value is missing")
 
         time = 0
+        referenceList = []
         while self.client.open() == True: #as long as the connection is established the following methods will be called
             #pulling live-data from Lidar-Unit
-            print(self.get_MET_station_data(0), "reference of dataset", self.get_time_stamp() )
-            time += 1
-            if time >= 10:
+            reference = self.get_MET_station_data(0)
+            print(reference, "reference of dataset", self.get_time_stamp() )
+            if reference not in referenceList :
+                referenceList.append(reference)
                 self.output_Met_station()
                 self.json_data()
-                time = 0
             sleep(1)
 
 
     # this method outputs data from the MET-Station
     def output_Met_station(self):
-            print("_________________________________________________________________")
-            print(self.get_MET_station_data(self.Met_station_dic.get("temperature")),"[°C], temperature")
-            print(self.get_MET_station_data(self.Met_station_dic.get("battery")),"[V], battery state")
-            print(self.get_MET_station_data(self.Met_station_dic.get("airPressure")),"[mPa], air pressure")
-            print(self.get_MET_station_data(self.Met_station_dic.get("windspeed")),"[m/s], wind speed")
-            print(self.get_MET_station_data(self.Met_station_dic.get("tilt")),"[°], tilt")
-            print(self.get_MET_station_data(self.Met_station_dic.get("humidity")),"[%], humidity")
-            print("_________________________________________________________________")
+        met_station ={"temperature":self.get_MET_station_data(self.Met_station_dic.get("temperature")),
+                      "battery":self.get_MET_station_data(self.Met_station_dic.get("battery")),
+                      "airPressure":self.get_MET_station_data(self.Met_station_dic.get("airPressure")),
+                      "windspeed":self.get_MET_station_data(self.Met_station_dic.get("windspeed")),
+                      "tilt":self.get_MET_station_data(self.Met_station_dic.get("tilt")),
+                      "humidity":self.get_MET_station_data(self.Met_station_dic.get("humidity"))}
+
+        """
+        print("_________________________________________________________________")
+        print(self.get_MET_station_data(self.Met_station_dic.get("temperature")),"[°C], temperature")
+        print(self.get_MET_station_data(self.Met_station_dic.get("battery")),"[V], battery state")
+        print(self.get_MET_station_data(self.Met_station_dic.get("airPressure")),"[mPa], air pressure")
+        print(self.get_MET_station_data(self.Met_station_dic.get("windspeed")),"[m/s], wind speed")
+        print(self.get_MET_station_data(self.Met_station_dic.get("tilt")),"[°], tilt")
+        print(self.get_MET_station_data(self.Met_station_dic.get("humidity")),"[%], humidity")
+        print("_________________________________________________________________")
+        """
+
+        return met_station
 
 
     #this method outputs every horizontal windspeed at set heights refreshing every 10 seconds
@@ -134,6 +146,7 @@ class Lidar():
             horizontal_windspeed[height_list[i]] = self.horizontal_windspeed_list[i]
         with open('Windspeed.json','w') as jsonFile:
             json.dump(horizontal_windspeed, jsonFile)
+            json.dump(self.output_Met_station(),jsonFile)
 
 
     #the method dec_to_float converts the registers (decimal_numbers) to hex/decimal numbers
