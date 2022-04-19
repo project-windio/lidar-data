@@ -5,6 +5,7 @@ from pyModbusTCP.client import ModbusClient
 from time import sleep
 from datetime import datetime, timezone, timedelta
 
+#Test
 class Lidar():
     def __init__(self):
         self.client = ModbusClient(host="10.10.8.1", port=502, auto_open=True) #building connection to Lidar-Unit
