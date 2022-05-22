@@ -11,9 +11,12 @@ class Lidar():
         self.client = ModbusClient(host="10.10.8.1", port=502, auto_open=True) #building connection to Lidar-Unit
         #the dictionary contains the Modbus register numbers to the specific keys
         self.Met_station_dic = {"temperature":20,"battery":18, "airPressure": 22, "windspeed": 32, "tilt":42, "humidity":24}
-        self.horizontal_windspeed_dic = {"height1":2 ,"height2":258, "height3":514, "height4":770, "height5":1026, "height6":1282,
-                                        "height7":1538, "height8":1794, "height9":2050, "height10":2306,"height11":2562}
+        self.horizontal_windspeed_dic = {"height_1":2 ,"height_2":258, "height_3":514, "height_4":770, "height_5":1026, "height_6":1282,
+                                        "height_7":1538, "height_8":1794, "height_9":2050, "height_10":2306,"height_11":2562}
+        self.heights_dic = {"height_1":8202,"height_2":8204,"height_3":8206,"height_4":8208,"height_5":8210,"height_6":8212,"height_7":8214,
+                            "height_8":8216,"height_9":8218,"height_10":8220,"height_11":8224}
         self.horizontal_windspeed_list = []
+        self.heights_list = []
         #check if connection is established or failed
         if self.client.open() == True:
             print("connection established")
@@ -24,6 +27,8 @@ class Lidar():
         for key in self.horizontal_windspeed_dic:
             try:
                 self.horizontal_windspeed_list.append(self.get_windspeed(self.horizontal_windspeed_dic.get(key)))
+                self.heights_list.append(self.get_windspeed(self.heights_dic.get(key)))
+
             except:
                 self.horizontal_windspeed_list.append("one value is missing")
 
@@ -36,13 +41,19 @@ class Lidar():
             if reference == referenceCur :
                 sleep(1)
             else:
+                self.horizontal_windspeed_list.clear()
+                for key in self.horizontal_windspeed_dic:
+                    try:
+                        self.horizontal_windspeed_list.append(self.get_windspeed(self.horizontal_windspeed_dic.get(key)))
+                    except:
+                        self.horizontal_windspeed_list.append("one value is missing")
                 self.pickle_data()
-                reference = referenceCur
 
+                reference = referenceCur
 
     # this method outputs data from the MET-Station
     def output_Met_station(self):
-        #this dictionary contains all important data measured by the Met-Station
+        #this dictionary contains all important data measured by the met_station
         met_station ={"temperature":self.get_MET_station_data(self.Met_station_dic.get("temperature")),
                       "battery":self.get_MET_station_data(self.Met_station_dic.get("battery")),
                       "airPressure":self.get_MET_station_data(self.Met_station_dic.get("airPressure")),
@@ -145,11 +156,13 @@ class Lidar():
     #a reference number for the individual data sets
     def pickle_data(self):
         horizontal_windspeed = {}
-        height_list = ["height1","height2","height3","height4","height5","height6","height7","height8","height9","height10","height11"]
+        set_heights = {}
+        height_list = ["height_1","height_2","height_3","height_4","height_5","height_6","height_7","height_8","height_9","height_10","height_11"]
         for i in range (11):
             horizontal_windspeed[height_list[i]] = self.horizontal_windspeed_list[i]
+            set_heights[height_list[i]] = self.heights_list[i]
 
-        dic ={"Met_station":self.output_Met_station(),"horizontal_windspeed": horizontal_windspeed, "time_stamp_data_received": time(),"time_stamp_data_created": self.get_time_stamp(), "reference": self.get_MET_station_data(0)}
+        dic ={"met_station":self.output_Met_station(),"horizontal_windspeed": horizontal_windspeed,"set_heights": set_heights, "time_stamp_data_received": time(),"time_stamp_data_generated": self.get_time_stamp(), "reference": self.get_MET_station_data(0)}
         with open("Windspeed.pickle", "wb") as pickle_file:
             pickle.dump(dic,pickle_file)
         #the pickle file is later send to a server on which the data is used for a digital twin
@@ -176,6 +189,6 @@ class Lidar():
         while len(str(hexCom)) < 8: #add 0 at the end if necessary
             hexCom += "0"
         binary = int(bin(int(hexCom, 16))[2:].zfill(32),2) #interpret the hex/decimal number as binary
-        return struct.unpack('f', struct.pack('i', binary))[0] #translate to float 32 bit
+        return round(struct.unpack('f', struct.pack('i', binary))[0],4) #translate to float 32 bit
 
 ZX300 = Lidar()
