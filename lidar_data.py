@@ -216,3 +216,4 @@ class lidar():
         return round(struct.unpack('f', struct.pack('i', binary))[0],4) #translate to float 32 bit
 
 ZX300 = lidar()
+#test
