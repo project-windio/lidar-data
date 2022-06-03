@@ -6,103 +6,119 @@ from time import sleep
 from datetime import datetime, timezone, timedelta
 from time import time
 
-class Lidar():
+class lidar():
     def __init__(self):
-        self.client = ModbusClient(host="10.10.8.1", port=502, auto_open=True) #building connection to Lidar-Unit
-        #the dictionary contains the Modbus register numbers to the specific keys
-        self.Met_station_dic = {"temperature":20,"battery":18, "airPressure": 22, "windspeed": 32, "tilt":42, "humidity":24}
-        self.horizontal_windspeed_dic = {"height_1":2 ,"height_2":258, "height_3":514, "height_4":770, "height_5":1026, "height_6":1282,
-                                        "height_7":1538, "height_8":1794, "height_9":2050, "height_10":2306,"height_11":2562}
-        self.heights_dic = {"height_1":8202,"height_2":8204,"height_3":8206,"height_4":8208,"height_5":8210,"height_6":8212,"height_7":8214,
-                            "height_8":8216,"height_9":8218,"height_10":8220,"height_11":8224}
-        self.horizontal_windspeed_list = []
-        self.heights_list = []
-        #check if connection is established or failed
-        if self.client.open() == True:
-            print("connection established")
-        else:
-            print("connection failed")
-            return None
-
-        for key in self.horizontal_windspeed_dic:
-            try:
-                self.horizontal_windspeed_list.append(self.get_windspeed(self.horizontal_windspeed_dic.get(key)))
-                self.heights_list.append(self.get_windspeed(self.heights_dic.get(key)))
-
-            except:
-                self.horizontal_windspeed_list.append("one value is missing")
-
-        reference = self.get_MET_station_data(0)
-        while self.client.open() == True: #as long as the connection is established the following methods will be called
-            #pulling live-data from Lidar-Unit
-            referenceCur = self.get_MET_station_data(0)
-
-            #if a new data set is available, this data is saved in a pickle file.
-            if reference == referenceCur :
-                sleep(1)
+        try:
+            self.client = ModbusClient(host="10.10.8.1", port=502, auto_open=True) #building connection to Lidar-Unit
+            #the dictionary contains the Modbus register numbers to the specific keys
+            self.met_station_dic = {"temperature":20, "battery":18, "airPressure": 22, "windspeed": 32, "tilt":42, "humidity":24, "raining":34, "met_wind_direction": 10,
+                                    "pod_upper_temperature":26, "pod_lower_temperature": 28, "pod_humidity": 30, "gps_latitude":44, "gps_longitude":46,"scan_dwell_time": 8228}
+            self.horizontal_windspeed_dic = {"height_1":2 ,"height_2":258, "height_3":514, "height_4":770, "height_5":1026, "height_6":1282,
+                                            "height_7":1538, "height_8":1794, "height_9":2050, "height_10":2306,"height_11":2562}
+            self.heights_dic = {"height_1":8202,"height_2":8204,"height_3":8206,"height_4":8208,"height_5":8210,"height_6":8212,"height_7":8214,
+                                "height_8":8216,"height_9":8218,"height_10":8220,"height_11":8224}
+            self.horizontal_windspeed_list = []
+            self.heights_list = []
+            self.height_list = ["height_1", "height_2", "height_3", "height_4", "height_5", "height_6", "height_7",
+                                "height_8", "height_9", "height_10", "height_11"]
+            self.number_of_heights = int(self.get_lidar_data(8200))
+            #check if connection is established or failed
+            if self.client.open() == True:
+                print("connection established")
             else:
-                self.horizontal_windspeed_list.clear()
+                print("connection failed")
+                return None
+            j = 0
+            while j <= self.number_of_heights:
                 for key in self.horizontal_windspeed_dic:
                     try:
-                        self.horizontal_windspeed_list.append(self.get_windspeed(self.horizontal_windspeed_dic.get(key)))
+                        self.horizontal_windspeed_list.append(self.get_lidar_data(self.horizontal_windspeed_dic.get(key)))
+                        self.heights_list.append(self.get_lidar_data(self.heights_dic.get(key)))
+                        j +=1
+
                     except:
                         self.horizontal_windspeed_list.append("one value is missing")
-                self.pickle_data()
+                        j += 1
 
-                reference = referenceCur
+            reference = self.get_lidar_data(0)
+            while self.client.open() == True: #as long as the connection is established the following methods will be called
+                #pulling live-data from Lidar-Unit
+                referenceCur = self.get_lidar_data(0)
+
+                #if a new data set is available, this data is saved in a pickle file.
+                if reference == referenceCur :
+                    sleep(0.2)
+                else:
+                    self.timestamp_data_received = time()
+                    self.horizontal_windspeed_list.clear()
+                    j = 0
+                    while j <= self.number_of_heights:
+                        for key in self.horizontal_windspeed_dic:
+                            try:
+                                self.horizontal_windspeed_list.append(self.get_lidar_data(self.horizontal_windspeed_dic.get(key)))
+                                j += 1
+                            except:
+                                self.horizontal_windspeed_list.append("one value is missing")
+                                j += 1
+                    self.pickle_data()
+                    reference = referenceCur
+        except:
+            sleep(0.2)
+            ZX300= lidar()
 
     # this method outputs data from the MET-Station
-    def output_Met_station(self):
+    def output_met_station(self):
         #this dictionary contains all important data measured by the met_station
-        met_station ={"temperature":self.get_MET_station_data(self.Met_station_dic.get("temperature")),
-                      "battery":self.get_MET_station_data(self.Met_station_dic.get("battery")),
-                      "airPressure":self.get_MET_station_data(self.Met_station_dic.get("airPressure")),
-                      "windspeed":self.get_MET_station_data(self.Met_station_dic.get("windspeed")),
-                      "tilt":self.get_MET_station_data(self.Met_station_dic.get("tilt")),
-                      "humidity":self.get_MET_station_data(self.Met_station_dic.get("humidity"))}
+        self.met_station ={"temperature":self.get_lidar_data(self.met_station_dic.get("temperature")),
+                      "battery":self.get_lidar_data(self.met_station_dic.get("battery")),
+                      "airPressure":self.get_lidar_data(self.met_station_dic.get("airPressure")),
+                      "windspeed":self.get_lidar_data(self.met_station_dic.get("windspeed")),
+                      "tilt":self.get_lidar_data(self.met_station_dic.get("tilt")),
+                      "humidity":self.get_lidar_data(self.met_station_dic.get("humidity")),
+                      "raining":self.get_lidar_data(self.met_station_dic.get("raining")),
+                      "met_wind_direction":self.get_lidar_data(self.met_station_dic.get("met_wind_direction")),
+                      "pod_upper_temperature": self.get_lidar_data(self.met_station_dic.get("pod_upper_temperature")),
+                      "pod_lower_temperature": self.get_lidar_data(self.met_station_dic.get("pod_lower_temperature")),
+                      "pod_humidity": self.get_lidar_data(self.met_station_dic.get("pod_humidity")),
+                      "gps_latitude": self.get_lidar_data(self.met_station_dic.get("gps_latitude")),
+                      "gps_longitude": self.get_lidar_data(self.met_station_dic.get("gps_longitude")),
+                      "scan_dwell_time": self.get_lidar_data(self.met_station_dic.get("scan_dwell_time"))}
 
-        """
+        #this print is used for test purposes only
+        """ 
         print("_________________________________________________________________")
-        print(self.get_MET_station_data(self.Met_station_dic.get("temperature")),"[°C], temperature")
-        print(self.get_MET_station_data(self.Met_station_dic.get("battery")),"[V], battery state")
-        print(self.get_MET_station_data(self.Met_station_dic.get("airPressure")),"[mPa], air pressure")
-        print(self.get_MET_station_data(self.Met_station_dic.get("windspeed")),"[m/s], wind speed")
-        print(self.get_MET_station_data(self.Met_station_dic.get("tilt")),"[°], tilt")
-        print(self.get_MET_station_data(self.Met_station_dic.get("humidity")),"[%], humidity")
+        print(met_station)
         print("_________________________________________________________________")
         """
 
-        return met_station
+        return self.met_station
 
 
-    #this method outputs every horizontal windspeed at set heights refreshing every 10 seconds in the console
-    #this method is rather for test purposes when setting up the lidar-unit at the location
+    #this method outputs the horizontal windspeed of height1
+    #this method is used for test purposes only when setting up the lidar-unit at the location
     def output_horizontal_windspeed(self):
         while True:
             print("________________________________________")
-            for key in self.horizontal_windspeed_dic:
-                try:
-                    self.horizontal_windspeed_list.append(self.get_windspeed(self.horizontal_windspeed_dic.get(key)))
-                    print(self.get_windspeed(self.horizontal_windspeed_dic.get(key)),"[m/s]")
-                except:
-                    self.horizontal_windspeed_list.append("one value is missing")
-                    print("one value is missing")
-            print("________________________________________")
-            sleep(10)
+            j = 0
+            while j <= self.number_of_heights:
+                for key in self.horizontal_windspeed_dic:
+                    try:
+                        self.horizontal_windspeed_list.append(self.get_lidar_data(self.horizontal_windspeed_dic.get(key)))
+                        print(self.get_lidar_data(self.horizontal_windspeed_dic.get(key)), "[m/s]")
+                        j += 1
+                    except:
+                        self.horizontal_windspeed_list.append("one value is missing")
+                        print("one value is missing")
+                        j += 1
+                print("________________________________________")
+                sleep(1)
 
-    def get_MET_station_data(self, attribute):
+    def get_lidar_data(self, attribute):
         hex = self.client.read_input_registers(attribute,2)
         for i in hex:
             if i == None:
                 return False
         return self.dec_to_float(hex[0], hex[1])
-
-    def get_windspeed(self,height):
-        hex = self.client.read_input_registers(height, 2)
-        for i in hex:
-            if i == None:
-                return False
-        return self.dec_to_float(hex[0],hex[1])
 
     def get_time_stamp(self):
         self.timestamp_dic = {"TS_top": None ,"TS_bottom":None }
@@ -150,23 +166,31 @@ class Lidar():
         cal = str(stamp).split(".")
         return cal
 
+    def individual_timestamp(self):
+        self.individual_timestamp_dic={}
+        for i in range (self.number_of_heights):
+            self.individual_timestamp_dic[self.height_list[i]] = self.timestamp_data_received - (i + self.met_station["scan_dwell_time"])
+        return self.individual_timestamp_dic
 
-    #for further implementation of the data on other systems, it is possible to generate a pickle file. The pickle file
-    #contains a dictionary of the horizontal windspeeds, the Met-station data, a time stamp generated when data is received, a time stamp when data is generated by the lidar and
-    #a reference number for the individual data sets
+
+    #for further implementation of the data on other systems and projects, it is possible to generate a pickle file. The pickle file
+    #contains a dictionary of the horizontal windspeeds, the Met-station data, a time stamp generated when data is received, a time stamp when data is generated by the lidar,
+    # the set heights and a reference number for the individual data sets
     def pickle_data(self):
         horizontal_windspeed = {}
         set_heights = {}
-        height_list = ["height_1","height_2","height_3","height_4","height_5","height_6","height_7","height_8","height_9","height_10","height_11"]
-        for i in range (11):
-            horizontal_windspeed[height_list[i]] = self.horizontal_windspeed_list[i]
-            set_heights[height_list[i]] = self.heights_list[i]
+        print(self.number_of_heights)
+        for i in range (self.number_of_heights):
+            horizontal_windspeed[self.height_list[i]] = self.horizontal_windspeed_list[i]
+            set_heights[self.height_list[i]] = self.heights_list[i]
 
-        dic ={"met_station":self.output_Met_station(),"horizontal_windspeed": horizontal_windspeed,"set_heights": set_heights, "time_stamp_data_received": time(),"time_stamp_data_generated": self.get_time_stamp(), "reference": self.get_MET_station_data(0)}
+        dic ={"met_station":self.output_met_station(),"horizontal_windspeed": horizontal_windspeed,"set_heights": set_heights,
+              "timestamp_data_received": self.timestamp_data_received,"timestamp_data_generated": self.get_time_stamp(),"individual_timestamp": self.individual_timestamp(), "reference": self.get_lidar_data(0)}
         with open("Windspeed.pickle", "wb") as pickle_file:
             pickle.dump(dic,pickle_file)
         #the pickle file is later send to a server on which the data is used for a digital twin
-
+        #for control purposes it is possible to reopen the pickle file and output the data in the console to
+        #control whether the program is runnig properly
         with open("Windspeed.pickle", "rb") as pickle_file:
             output = pickle.load(pickle_file)
         print(output)
@@ -191,4 +215,4 @@ class Lidar():
         binary = int(bin(int(hexCom, 16))[2:].zfill(32),2) #interpret the hex/decimal number as binary
         return round(struct.unpack('f', struct.pack('i', binary))[0],4) #translate to float 32 bit
 
-ZX300 = Lidar()
+ZX300 = lidar()
