@@ -53,7 +53,7 @@ def main():
                     lidar_data = socket.send_pyobj([LIDAR_TOPIC,lidar_data])
                     reference = referenceCur
             else:
-                sleep(2)
+                sleep(0.2)
 
     except StopIteration:
         logging.fatal("GPSD has terminated")
