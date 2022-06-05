@@ -41,13 +41,15 @@ def main():
             lidar_data = pickle.load(pickle_file)
         reference = lidar_data["reference"]
         while True:
+            #it is necessary to check whether the pickle.file contains data since the pickle might be opened at the same time by another program.
+            #if this is the case the pickle file might get overwritten and for a moment does not contain any data which might cause an error.
             if os.path.getsize("Windspeed.pickle") > 0:
              #opening the pickle file and checking whether a new data set is available
                 with open("Windspeed.pickle", "rb") as pickle_file:
                     lidar_data = pickle.load(pickle_file)
                 referenceCur = lidar_data["reference"]
                 if reference == referenceCur:
-                    sleep(1)
+                    sleep(0.2)
                 else:
                   #if a new data set is available the topic and data is send via ZMQ
                     lidar_data = socket.send_pyobj([LIDAR_TOPIC,lidar_data])
