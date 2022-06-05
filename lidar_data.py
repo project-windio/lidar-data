@@ -6,7 +6,7 @@ from time import sleep
 from datetime import datetime, timezone, timedelta
 from time import time
 
-class lidar():
+class Lidar():
     def __init__(self):
         try:
             self.client = ModbusClient(host="10.10.8.1", port=502, auto_open=True) #building connection to Lidar-Unit
@@ -157,8 +157,16 @@ class lidar():
         second = sec_cal[0]
 
         tz = timezone(timedelta(hours=0))
-        timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second), tzinfo=tz)
-        return timestamp
+        #since the lidar does not output a conventional Unix timestamp the calculation returns on the 31 of the month a Value Error.
+        #To counter this problem the exception decreases the month by one and the day gets increased by 31.
+        try:
+            timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second), tzinfo=tz)
+            return timestamp
+        except ValueError:
+            month = int(month) -1
+            day = int(day) +31
+            timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second), tzinfo=tz)
+            return timestamp
 
 
     def cal_date(self,factor, decimal):
@@ -215,5 +223,5 @@ class lidar():
         binary = int(bin(int(hexCom, 16))[2:].zfill(32),2) #interpret the hex/decimal number as binary
         return round(struct.unpack('f', struct.pack('i', binary))[0],4) #translate to float 32 bit
 
-ZX300 = lidar()
+ZX300 = Lidar()
 
