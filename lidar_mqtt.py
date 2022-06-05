@@ -229,5 +229,3 @@ except KeyboardInterrupt:
     client.loop_stop()
     print('Interrupted!')
     pass
-
-#test
