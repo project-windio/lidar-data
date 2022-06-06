@@ -6,7 +6,7 @@ from time import sleep
 def lidar_dic_test(id="urn:uni-bremen:bik:wio:0:0:wnds:0002", temperature = None, battery = None,
               airPressure = None, ground_windspeed = None, tilt = None, humidity = None, raining = None, met_wind_direction = None,pod_upper_temperature = None,
               pod_lower_temperature = None,pod_humidity = None,gps_latitude = None, gps_longitude = None,  timestamp_data_received = None, reference=None, timestamp_data_generated= None, scan_dwell_time= None):
-    #creating a .json structure to be able to use the data
+    #creating specific .json structure to be able to use the data on a server
     data =  {
     "content-spec": "urn:spec://eclipse.org/unide/measurement-message#v3",
     "device": {
