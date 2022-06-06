@@ -8,7 +8,7 @@ import pickle
 def main():
     #setting the Ip-adress and port number for the connection
     #connection = f'{config["ipc_protocol"]}:{config["ipc_port"]}'
-    connection  = ('tcp://127.0.0.1:5557')
+    connection = ('tcp://127.0.0.1:5557')
     logging.debug(f'binding to {connection} for zeroMQ IPC')
     context = zmq.Context()
     socket = context.socket(zmq.PUB)
@@ -64,5 +64,3 @@ def main():
         logging.info('goodbye')
         sys.exit(0)
 
-
-connection = main()
