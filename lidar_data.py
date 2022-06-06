@@ -5,6 +5,9 @@ from pyModbusTCP.client import ModbusClient
 from time import sleep
 from datetime import datetime, timezone, timedelta
 from time import time
+import zmqPUB
+import lidar_mqtt
+from threading import Thread
 
 class Lidar():
     def __init__(self):
@@ -194,7 +197,7 @@ class Lidar():
     def pickle_data(self):
         horizontal_windspeed = {}
         set_heights = {}
-        print(self.number_of_heights)
+        #print(self.number_of_heights)
         for i in range (self.number_of_heights):
             horizontal_windspeed[self.height_list[i]] = self.horizontal_windspeed_list[i]
             set_heights[self.height_list[i]] = self.heights_list[i]
@@ -230,5 +233,16 @@ class Lidar():
         binary = int(bin(int(hexCom, 16))[2:].zfill(32),2) #interpret the hex/decimal number as binary
         return round(struct.unpack('f', struct.pack('i', binary))[0],4) #translate to float 32 bit
 
-ZX300 = Lidar()
+if __name__ == "__main__":
+    thread_1 = Thread(target = Lidar)
+    thread_2 = Thread(target= zmqPUB.main)
+    thread_3 = Thread(target=lidar_mqtt.mqtt_connection)
+    thread_1.start()
+    thread_2.start()
+    thread_3.start()
+
+
+
+
+
 
