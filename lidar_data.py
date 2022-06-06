@@ -17,11 +17,11 @@ class Lidar():
                                             "height_7":1538, "height_8":1794, "height_9":2050, "height_10":2306,"height_11":2562}
             self.heights_dic = {"height_1":8202,"height_2":8204,"height_3":8206,"height_4":8208,"height_5":8210,"height_6":8212,"height_7":8214,
                                 "height_8":8216,"height_9":8218,"height_10":8220,"height_11":8224}
+            self.number_of_heights = int(self.get_lidar_data(8200))
             self.horizontal_windspeed_list = []
             self.heights_list = []
             self.height_list = ["height_1", "height_2", "height_3", "height_4", "height_5", "height_6", "height_7",
                                 "height_8", "height_9", "height_10", "height_11"]
-            self.number_of_heights = int(self.get_lidar_data(8200))
             #check if connection is established or failed
             if self.client.open() == True:
                 print("connection established")
@@ -41,12 +41,13 @@ class Lidar():
                         j += 1
 
             reference = self.get_lidar_data(0)
-            while self.client.open() == True: #as long as the connection is established the following methods will be called
+            #as long as the connection is established the following methods will be called
+            while self.client.open() == True:
                 #pulling live-data from Lidar-Unit
                 referenceCur = self.get_lidar_data(0)
 
                 #if a new data set is available, this data is saved in a pickle file.
-                if reference == referenceCur :
+                if reference == referenceCur:
                     sleep(0.2)
                 else:
                     self.timestamp_data_received = time()
@@ -55,7 +56,7 @@ class Lidar():
                     while j <= self.number_of_heights:
                         for key in self.horizontal_windspeed_dic:
                             try:
-                                self.horizontal_windspeed_list.append(self.get_lidar_data(self.horizontal_windspeed_dic.get(key)))
+                                self.horizontal_windspeed_list.append(self.get_lidar_data(self.horizontal_windspeed_dic[key]))
                                 j += 1
                             except:
                                 self.horizontal_windspeed_list.append("one value is missing")
@@ -64,7 +65,7 @@ class Lidar():
                     reference = referenceCur
         except:
             sleep(0.2)
-            ZX300= lidar()
+            ZX300= Lidar()
 
     # this method outputs data from the MET-Station
     def output_met_station(self):
@@ -72,22 +73,22 @@ class Lidar():
         self.met_station ={"temperature":self.get_lidar_data(self.met_station_dic.get("temperature")),
                       "battery":self.get_lidar_data(self.met_station_dic.get("battery")),
                       "airPressure":self.get_lidar_data(self.met_station_dic.get("airPressure")),
-                      "windspeed":self.get_lidar_data(self.met_station_dic.get("windspeed")),
+                      "windspeed":self.get_lidar_data(self.met_station_dic.get("windspeed")),#windspeed measured by the met station (appr. 1,5 meter above the ground)
                       "tilt":self.get_lidar_data(self.met_station_dic.get("tilt")),
                       "humidity":self.get_lidar_data(self.met_station_dic.get("humidity")),
                       "raining":self.get_lidar_data(self.met_station_dic.get("raining")),
-                      "met_wind_direction":self.get_lidar_data(self.met_station_dic.get("met_wind_direction")),
+                      "met_wind_direction":self.get_lidar_data(self.met_station_dic.get("met_wind_direction")), #0° = North
                       "pod_upper_temperature": self.get_lidar_data(self.met_station_dic.get("pod_upper_temperature")),
                       "pod_lower_temperature": self.get_lidar_data(self.met_station_dic.get("pod_lower_temperature")),
-                      "pod_humidity": self.get_lidar_data(self.met_station_dic.get("pod_humidity")),
+                      "pod_humidity": self.get_lidar_data(self.met_station_dic.get("pod_humidity")),#humidity within the pod
                       "gps_latitude": self.get_lidar_data(self.met_station_dic.get("gps_latitude")),
                       "gps_longitude": self.get_lidar_data(self.met_station_dic.get("gps_longitude")),
-                      "scan_dwell_time": self.get_lidar_data(self.met_station_dic.get("scan_dwell_time"))}
+                      "scan_dwell_time": self.get_lidar_data(self.met_station_dic.get("scan_dwell_time"))}#time it takes to measure one height (usally 1 second)
 
         #this print is used for test purposes only
         """ 
         print("_________________________________________________________________")
-        print(met_station)
+        print(self.met_station)
         print("_________________________________________________________________")
         """
 
@@ -114,6 +115,8 @@ class Lidar():
                 sleep(1)
 
     def get_lidar_data(self, attribute):
+        #'hex' is a list which contains two decimal numbers which represent the data contained in the specific register
+        #self.dec_to_float() converts the data into interpretable form
         hex = self.client.read_input_registers(attribute,2)
         for i in hex:
             if i == None:
@@ -121,6 +124,8 @@ class Lidar():
         return self.dec_to_float(hex[0], hex[1])
 
     def get_time_stamp(self):
+        #since the timestamp is 32 bit and the mantissa is only the size of 23 bits, the information for the timestamp is split into two registers.
+        #these two registers are combined and processed subsequently
         self.timestamp_dic = {"TS_top": None ,"TS_bottom":None }
         self.timestampTop = self.client.read_input_registers(36,2)
         self.timestampBottom= self.client.read_input_registers(38,2)
@@ -157,7 +162,7 @@ class Lidar():
         second = sec_cal[0]
 
         tz = timezone(timedelta(hours=0))
-        #since the lidar does not output a conventional Unix timestamp the calculation returns on the 31 of the month a Value Error.
+        #since the lidar does not output a conventional Unix timestamp the calculation returns, on the 31 of the month, a Value Error.
         #To counter this problem the exception decreases the month by one and the day gets increased by 31.
         try:
             timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second), tzinfo=tz)
@@ -174,6 +179,8 @@ class Lidar():
         cal = str(stamp).split(".")
         return cal
 
+    #since the lidar does not measure all horizontal windspeeds at the same time, individual timestamps are calculated, based on the scan_dwell_time
+    #the lidar outputs the highest placed height in the beginning and iterates trough the rest from heighest to lowest
     def individual_timestamp(self):
         self.individual_timestamp_dic={}
         for i in range (self.number_of_heights):
@@ -183,7 +190,7 @@ class Lidar():
 
     #for further implementation of the data on other systems and projects, it is possible to generate a pickle file. The pickle file
     #contains a dictionary of the horizontal windspeeds, the Met-station data, a time stamp generated when data is received, a time stamp when data is generated by the lidar,
-    # the set heights and a reference number for the individual data sets
+    #the set heights and a reference number for the individual data sets
     def pickle_data(self):
         horizontal_windspeed = {}
         set_heights = {}
@@ -196,7 +203,7 @@ class Lidar():
               "timestamp_data_received": self.timestamp_data_received,"timestamp_data_generated": self.get_time_stamp(),"individual_timestamp": self.individual_timestamp(), "reference": self.get_lidar_data(0)}
         with open("Windspeed.pickle", "wb") as pickle_file:
             pickle.dump(dic,pickle_file)
-        #the pickle file is later send to a server on which the data is used for a digital twin
+        #the pickle file is later sent to a server on which the data is used for a digital twin
         #for control purposes it is possible to reopen the pickle file and output the data in the console to
         #control whether the program is runnig properly
         with open("Windspeed.pickle", "rb") as pickle_file:
