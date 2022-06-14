@@ -1,11 +1,14 @@
 # Lidar_Data
-**Using this code it is possible to extract raw data using Modbus TCP/IP from the Lidar unit. This data gets interpreted and may be used for different purposes such as the digital twin.
+**Using this code it is possible to extract data using Modbus TCP/IP from the Lidar unit. This data gets interpreted and may be used for different purposes such as the digital twin (IoT application).
 The register numbers are based on the Modbus Guide by the manufacturer ZXLidar. 
-It is important to be aware that the Modbus function is read only. Any changes to the Lidar unit must be made using the Waltz Software.**
+It is important to be aware that the implemented Modbus function is read only. Any changes to the Lidar unit must be made using the Waltz Software.**
 
+##Data Structure:
+After receiving the data (using lidar_data.py) the dataset is sent using ZeroMQ. The dataset needs to contain specific parameters to be compatible
+with other services running on the Motion Sensor Box. 
 ![Data Structure](doc/data_structure.png)
 
-## Glossary
+## Glossary:
 
 **timestamp_data_received** = if a new data set is available a timestamp is generated
 
@@ -40,7 +43,7 @@ It is important to be aware that the Modbus function is read only. Any changes t
 
 **air pressure** = the air pressure measured by the met station
 
-**windspeed(met-station)** = the windspeed measured by the met station (approx. 1,5 m above the ground)
+**windspeed(*met-station*)** = the windspeed measured by the met station (approx. 1,5 m above the ground)
 
 **tilt** = horizontal tilt from the met station
 
@@ -60,6 +63,8 @@ It is important to be aware that the Modbus function is read only. Any changes t
 
 
 ## Error Codes:
+**If the Lidar can not measure a specific value, the Modbus register contain error codes instead. Explanation
+is as the following:**
 
 **9999** = It is not possible to measure wind speed data. Probale causes may be
 	   very low windspeed, partial obstruction on the scanner window or interference
