@@ -4,6 +4,7 @@ The register numbers are based on the Modbus Guide by the manufacturer ZXLidar.
 It is important to be aware that the implemented Modbus function is read only. Any changes to the Lidar unit must be made using the Waltz Software.**
 
 ##Data Structure:
+
 **After receiving the data (using lidar_data.py) the dataset is sent using ZeroMQ. The dataset needs to contain specific parameters to be compatible
 with other services running on the Motion Sensor Box.**
 
