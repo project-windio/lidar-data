@@ -47,7 +47,6 @@ def create_mqtt_payload(id="urn:uni-bremen:bik:wio:0:0:wnds:0002", acc_x=0, acc_
     ]
     }
     """
-    g = 9.81  # Acceleration due to gravity.
     dict = {
         "content-spec": "urn:spec://eclipse.org/unide/measurement-message#v3",
         "device": {
@@ -58,15 +57,6 @@ def create_mqtt_payload(id="urn:uni-bremen:bik:wio:0:0:wnds:0002", acc_x=0, acc_
                 "context": {
                     "timestamp_data_received": {
                         "unit": "Unix"
-                    },
-                    "acc_x": {
-                        "unit": "m s-2"
-                    },
-                    "acc_y": {
-                        "unit": "m s-2"
-                    },
-                    "acc_z": {
-                        "unit": "m s-2"
                     },
                     "set_height_1":{
                         "unit":"m"
@@ -320,15 +310,6 @@ def create_mqtt_payload(id="urn:uni-bremen:bik:wio:0:0:wnds:0002", acc_x=0, acc_
                     "timestamp_data_received": [
                         timestamp_data_received
                     ],
-                    "acc_x": [
-                        float(acc_x) * g
-                    ],
-                    "acc_y": [
-                        float(acc_y) * g
-                    ],
-                    "acc_z": [
-                        float(acc_z) * g
-                    ],
                     "set_height_1":[
                         set_height_1
                     ],
@@ -581,7 +562,7 @@ def create_mqtt_payload(id="urn:uni-bremen:bik:wio:0:0:wnds:0002", acc_x=0, acc_
 
 
 # Read config.
-with open('lidar-mqtt.json') as json_file:
+with open('/home/pi/motion-sensor-box/src/lidar/src/lidar-mqtt.json') as json_file:
     config = json.load(json_file)
     print(config)
     user = config['user']
@@ -632,10 +613,6 @@ try:
             print(f'Received first data: {data}')
             print(f'From topic: {zmq_topic}')
             is_first_data = False
-        if zmq_topic == 'imu':
-            print(f'Will send data via MQTT: {data}')
-            payload = create_mqtt_payload(unix_epoch=data[0], acc_x=data[2], acc_y=data[3], acc_z=data[4])
-            client.publish(mqtt_topic, payload)
         if zmq_topic == "ldr":  # filling the .json structure with the data published by zmqPUB.py
             payload = create_mqtt_payload(set_height_1=data[4],set_height_2=data[10],set_height_3=data[16],
                         set_height_4=data[22],set_height_5=data[28],set_height_6=data[34],set_height_7=data[40],set_height_8=data[46],set_height_9=data[52],set_height_10=data[58],set_height_11=data[64],
