@@ -1,0 +1,15 @@
+[Unit]
+Description=Lidar Unit Service
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+SyslogIdentifier=msb-lidar
+Type=simple
+Restart=always
+RestartSec=1
+User=pi
+ExecStart=/usr/bin/python /home/pi/motion-sensor-box/src/lidar/src/lidar_data.py
+
+[Install]
+WantedBy=multi-user.target
