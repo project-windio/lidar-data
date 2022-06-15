@@ -10,7 +10,7 @@ from datetime import timezone
 import uptime
 
 try:
-    from sim_lidar_data.py import (init, LIDAR_TOPIC)
+    from lidar_data_config import (init, LIDAR_TOPIC)
 except ImportError:
     raise Exception ("failed to import init method or topic")
     sys.exit(-1)
@@ -44,7 +44,11 @@ def initiate_zmq_connection():
     while True:
         try:
             lidar_data = socket.send_multipart([LIDAR_TOPIC, pickle.dumps(gen_lidar_message())])
+            print(gen_lidar_message())
         except Exception as e:
             print(f"unable to send data with zmq: {e}")
             sys.exit(-1)
         sleep(1)
+
+if __name__ == "__main__":
+    initiate_zmq_connection()
