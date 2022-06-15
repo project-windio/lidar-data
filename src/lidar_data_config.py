@@ -100,6 +100,20 @@ def parse_arguments() -> dict:
         type=str,
     )
 
+    arg_parser.add_argument(
+        '--modbus-protocol',
+        help='the modbus protocol used to extract lidar data',
+        default='10.10.8.1',
+        type=str,
+    )
+
+    arg_parser.add_argument(
+        '--modbus-port',
+        help='the modbus port used to extract lidar data',
+        default='502',
+        type=str,
+    )
+
     return arg_parser.parse_args().__dict__
 
 
