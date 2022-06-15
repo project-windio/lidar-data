@@ -7,7 +7,7 @@ import logging
 LIDAR_TOPIC = "ldr".encode('utf-8')
 
 def signal_handler_exit(sig, frame):
-    print('* msb_gps: bye')
+    print('* msb_ldr: bye')
     sys.exit(0)
 
 
