@@ -50,6 +50,10 @@ class Lidar():
         self.height_list = ["height_1", "height_2", "height_3", "height_4", "height_5", "height_6", "height_7",
                             "height_8", "height_9", "height_10", "height_11"]
 
+        self.vertical_windspeed_1 = None
+        self.horizontal_windspeed_1 = None
+        self.wind_direction_1 = None
+
         self.horizontal_windspeed_list = []
         self.vertical_windspeed_list = []
         self.wind_direction_list = []
@@ -101,15 +105,26 @@ class Lidar():
                     j += 1
 
     def run(self):
+        self.first_data = True
         while self.client.open() == True:
             self.referenceCur = self.get_lidar_data(0)
             if self.reference == self.referenceCur:
-                sleep(0.2)
+                if self.first_data == True:
+                    self.met_station_data = self.output_met_station()
+                    self.vertical_windspeed_1 = self.get_lidar_data(self.vertical_windspeed_dic[self.height_list[0]])
+                    self.wind_direction_1 = self.get_lidar_data(self.wind_direction_dic[self.height_list[0]])
+                    self.horizontal_windspeed_1 = self.get_lidar_data(self.horizontal_windspeed_dic[self.height_list[0]])
+                    self.timestamp = self.get_lidar_time_stamp()
+                    #print(self.timestamp)
+                    self.first_data = False
+                else:
+                    sleep(0.2)
             else:
+                self.first_data = True
                 #self.data.extend([datetime.fromtimestamp(epoch := time(), tz=timezone.utc),epoch])
-                self.data = [calendar.timegm(datetime.fromtimestamp(timestamp=time(), tz=timezone.utc).utctimetuple()), uptime.uptime()]
+                self.data = [str(calendar.timegm(datetime.fromtimestamp(timestamp=time(), tz=timezone.utc).utctimetuple())), uptime.uptime()]
                 self.data.append(self.reference)
-                self.get_lidar_time_stamp()
+                self.data.append(self.timestamp)
                 self.horizontal_windspeed_list.clear()
                 self.counter = 0
                 while self.counter < self.number_of_heights:
@@ -120,29 +135,38 @@ class Lidar():
                     self.polling_vertical_windspeeds()
                     self.polling_wind_directions()
                     self.counter += 1
-                self.output_met_station()
-                print(self.data)
+                self.data.extend(self.met_station_data)
+                #print(self.data)
                 self.publishing_data()
                 self.data.clear()
                 self.reference = self.referenceCur
 
     def polling_vertical_windspeeds(self):
         try:
-            self.data.append(self.get_lidar_data(self.vertical_windspeed_dic[self.height_list[self.counter]]))
+            if self.counter == 0:
+                self.data.append(self.vertical_windspeed_1)
+            else:
+                self.data.append(self.get_lidar_data(self.vertical_windspeed_dic[self.height_list[self.counter]]))
         except Exception as e:
             self.data.append("unable to receive value for this height")
             print(f"unable to receive value for this height(vertical_windspeed):{e}")
 
     def polling_wind_directions(self):
         try:
-            self.data.append(self.get_lidar_data(self.wind_direction_dic[self.height_list[self.counter]]))
+            if self.counter == 0:
+                self.data.append(self.wind_direction_1)
+            else:
+                self.data.append(self.get_lidar_data(self.wind_direction_dic[self.height_list[self.counter]]))
         except Exception as e:
             self.data.append("unable to receive value for this height")
             print(f"unable to receive value for this height(wind direction):{e}")
 
     def polling_horinzontal_windspeeds(self):
         try:
-            self.data.append(self.get_lidar_data(self.horizontal_windspeed_dic[self.height_list[self.counter]]))
+            if self.counter == 0:
+                self.data.append(self.horizontal_windspeed_1)
+            else:
+                self.data.append(self.get_lidar_data(self.horizontal_windspeed_dic[self.height_list[self.counter]]))
         except Exception as e:
                 self.data.append("unable to receive value for this height")
                 print(f"unable to receive value for this height(horizontal_windspeed):{e}")
@@ -164,7 +188,7 @@ class Lidar():
     def output_met_station(self):
         #this dictionary contains all important data measured by the met_station
         try:
-            self.data.extend([round(self.get_lidar_data(self.met_station_dic.get("temperature")),2),
+            self.met_station_data = [round(self.get_lidar_data(self.met_station_dic.get("temperature")),2),
                               round(self.get_lidar_data(self.met_station_dic.get("battery")),2),
                               round(self.get_lidar_data(self.met_station_dic.get("airPressure")),2),
                               round(self.get_lidar_data(self.met_station_dic.get("windspeed")),2),  #windspeed measured by the met station (appr. 1,5 meter above the ground)
@@ -177,8 +201,8 @@ class Lidar():
                               round(self.get_lidar_data(self.met_station_dic.get("pod_humidity")),2),  #humidity within the pod
                               round(self.get_lidar_data(self.met_station_dic.get("gps_latitude")),2),
                               round(self.get_lidar_data(self.met_station_dic.get("gps_longitude")),2),
-                              round(self.get_lidar_data(self.met_station_dic.get("scan_dwell_time")),2)])#time it takes to measure one height (usally 1 second)
-
+                              round(self.get_lidar_data(self.met_station_dic.get("scan_dwell_time")),2)]#time it takes to measure one height (usally 1 second)
+            return self.met_station_data
         except Exception as e:
             print(f"unable to receive all data provided by the met station:{e}")
 
@@ -189,6 +213,8 @@ class Lidar():
         self.timestamp_dic = {"TS_top": None ,"TS_bottom":None }
         self.timestampTop = self.client.read_input_registers(36,2)
         self.timestampBottom= self.client.read_input_registers(38,2)
+        #print(self.timestampTop)
+        #print(self.timestampBottom)
         for i in self.timestampTop:
             if i == None:
                 return False
@@ -201,6 +227,7 @@ class Lidar():
             else:
                 self.timestamp_dic["TS_bottom"] = self.hex_to_float(self.timestampBottom[0],self.timestampBottom[1])
         timestamp_add = self.timestamp_dic["TS_top"] + self.timestamp_dic["TS_bottom"]
+        #print(timestamp_add)
 
         year_stamp = timestamp_add / 60 / 60 / 24 / 31 / 12
         year_cal = str(year_stamp).split(".")
@@ -226,12 +253,12 @@ class Lidar():
         #To counter this problem the exception decreases the month by one and the day gets increased by 31.
         try:
             self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second), tzinfo=tz)
-            self.data.append(self.timestamp)
+            return self.timestamp
         except ValueError:
             month = int(month) -1
             day = int(day) +31
             self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second), tzinfo=tz)
-            self.data.append(self.timestamp)
+            return self.timestamp
 
     def cal_date(self,factor, decimal):
         stamp = float("0." + str(decimal[1])) * factor
@@ -266,7 +293,11 @@ class Lidar():
         try:
             hexA_list = hexA_long.split("x")
             hexB_list = hexB_long.split("x")
-            hexCom = hexB_list[1] + hexA_list[1] #combined hex/decimal number
+            if len(hexA_list[1]) < 4:
+                hexA_list[1] = str(0) + hexA_list[1]
+                hexCom = hexB_list[1] + hexA_list[1] #combined hex/decimal number
+            else:
+                hexCom = hexB_list[1] + hexA_list[1]  # combined hex/decimal number
         except:
             hexCom = hexB_long+hexA_long
         while len(str(hexCom)) < 8: #add 0 at the end if necessary
