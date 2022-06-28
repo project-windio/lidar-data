@@ -12,6 +12,12 @@ import calendar
 
 class Lidar():
     def __init__(self):
+        """
+
+        Using the Modbus capability of the ZX300 Lidar it is possible to extract data by polling data from the
+        ZXLidar. To test the functionality of the ZeroMQ implementation it is possible to simulate Lidar data.
+
+        """
         try:
             from lidar_data_config import (init, LIDAR_TOPIC)
             self.lidar_topic = LIDAR_TOPIC
@@ -25,6 +31,11 @@ class Lidar():
         self.socket = self.context.socket(zmq.PUB)
 
     def initiate_zmq_connection(self):
+        """
+        Initiating a zmq connection for intern communication. The data extracted from the lidar
+        is published and is received by lidar_mqtt.py.
+        """
+
         logging.debug(f'binding to {self.zmq_connection} for zeroMQ IPC')
         try:
             self.socket.bind(self.zmq_connection)
@@ -36,6 +47,9 @@ class Lidar():
         logging.debug(f'entering endless loop')
 
     def publishing_data(self):
+        """
+        All data is published using ZeroMQ.
+        """
         try:
             lidar_data = self.socket.send_multipart([self.lidar_topic,pickle.dumps(self.data)])
         except Exception as e:
@@ -43,6 +57,11 @@ class Lidar():
             sys.exit(-1)
 
     def run(self):
+        """
+        The run function is the main method for receiving and sending data. Everytime 2 seconds
+        all data is received, computed and later sent using ZeroMQ.
+        The data is temporarily stored in a list (self.data)
+        """
         while True:
             self.data = self.gen_lidar_message()
             print(self.data)
@@ -51,6 +70,15 @@ class Lidar():
             sleep(2)
 
     def gen_lidar_message(self):
+        """
+        This method generates values to simulate real values from the lidar.
+
+        Return
+        ------
+        list
+            data contains all lidar data
+            Shape: len = 84
+        """
         data =  [str(calendar.timegm(datetime.fromtimestamp(timestamp=time(), tz=timezone.utc).utctimetuple())), uptime.uptime(), 2027075.0, '2022-06-15 08:49:22+00:00',
                  200.0, 2027075.0, 1655282962, 3.4464, 0.2488, 190.9362, 180.0, 2027076.0,
                  1655282963, 4.0556, -0.0248, 183.9466, 160.0, 2027077.0, 1655282964, 3.9232, -0.0083, 185.4916, 140.0, 2027078.0, 1655282965, 3.8143, 0.038,
