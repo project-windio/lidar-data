@@ -323,7 +323,7 @@ class Lidar():
 
     def cal_date(self,factor, decimal):
         """
-        Small calculation for date calculation
+        Small calculation for date calculation.
 
         Parameters
         ----------
@@ -346,7 +346,7 @@ class Lidar():
     def individual_timestamp(self):
         """
         Since the lidar does not measure all horizontal wind speeds at the same time, individual
-        timestamps are calculated, based on the scan_dwell_time. The scan_dwell_time is add to the
+        timestamps are calculated, based on the scan_dwell_time. The scan_dwell_time is added to the
         timestamp of the first timestamp.
         The lidar outputs the highest placed height in the beginning and iterates through the rest
         from highest to lowest.
@@ -357,6 +357,7 @@ class Lidar():
 
     def get_lidar_data(self, attribute):
         """
+        get_lidar_data is used to poll data from the lidar unit based on the register number.
         'hex' is a list which contains two decimal numbers which represent the data contained in the specific register.
         self.dec_to_float() converts the data into interpretable form.
 
