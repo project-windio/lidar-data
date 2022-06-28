@@ -168,7 +168,7 @@ class Lidar():
                 self.data.extend(self.met_station_data)
 
                 for i in range(len(self.data)):
-                    if self.data[i] == 9999.0:
+                    if self.data[i] == 9999.0 or self.data[i] == 9998:
                         self.data[i] = None
 
                 self.publishing_data()
