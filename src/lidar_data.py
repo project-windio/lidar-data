@@ -272,7 +272,7 @@ class Lidar():
          time object
             timestamp object representing the time the data was measured
             Shape: timestamp with year|month|day|hour|minute|second|timezone info
-            """
+         """
 
         self.timestamp_dic = {"TS_top": None ,"TS_bottom":None }
         self.timestampTop = self.client.read_input_registers(36,2)
