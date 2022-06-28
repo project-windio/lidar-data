@@ -216,7 +216,7 @@ class Lidar():
 
     def polling_reference(self):
         """
-        Appending for each measurement made by the lidar an individual reference number to the list (self.data).
+        Appending an individual reference number to the list (self.data) for each measurement made by the lidar .
         Each height gets a unique reference number.
         """
         try:
