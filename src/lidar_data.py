@@ -86,7 +86,7 @@ class Lidar():
 
     def initiate_zmq_connection(self):
         """
-        Initiating a zmq connection for intern communication. The data extracted from the lidar
+        Initiating a ZeroMQ connection for intern communication. The data extracted from the lidar
         is published and is received by lidar_mqtt.py.
         """
 
