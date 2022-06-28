@@ -77,3 +77,6 @@ is as followed:**
 **9998** = atmospheric conditions which affect the wind speed measurement. This may be 
 	   fog or precipitation.
 
+**Since the data is streamed to a remote server which can only display the data properly if 
+any extraordinary values are hidden, the value 9999 and 9998 are replaced with the value None**
+
