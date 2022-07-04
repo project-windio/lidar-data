@@ -12,54 +12,49 @@ import pickle
 import calendar
 
 class Lidar():
+    """
+    X
+    """
+    
     def __init__(self):
         """
-
-        Using the Modbus capability of the ZX300 Lidar it is possible to extract data by polling data from the
-        registers in the dictionaries below. Every register below contains data which refreshes after every full
-        measurement. (the time depends on the set number of heights)
-        The __init__ function also creates all necessary lists and other variables for either the use of the following
-        methods or the Modbus connection between the ZX300 and the MotionSensor Box.
-
+        Creates all attributes that are required to access ZX300's Modbus registers and to establish a 
+        ZMQ connection on Motion Sensor Box.
         """
 
-        self.client = ModbusClient(host="10.10.8.1", port=502, auto_open=True)  # building connection to Lidar-Unit
+        self.client = ModbusClient(host="10.10.8.1", port=502, auto_open=True)  # connect Motion Sensor Box with ZX300
         self.zmq_connection = ('tcp://127.0.0.1:5556')
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PUB)
-        # the dictionary contains the Modbus register numbers to the specific keys
-
+        
+        # Dictionary for the Modbus register numbers. Some of the register numbers can be found in ZX300's Modbus Guide
+        # ("xxx.png" and readme.md) and some were found by reverse engineering.
         self.met_station_dic = {"temperature": 20, "battery": 18, "airPressure": 22, "windspeed": 32, "tilt": 42,
                                 "humidity": 24, "raining": 34, "met_wind_direction": 10,
                                 "pod_upper_temperature": 26, "pod_lower_temperature": 28, "pod_humidity": 30,
                                 "gps_latitude": 44, "gps_longitude": 46, "scan_dwell_time": 8228}
-
         self.horizontal_windspeed_dic = {"height_1": 2, "height_2": 258, "height_3": 514, "height_4": 770,
                                          "height_5": 1026, "height_6": 1282,
                                          "height_7": 1538, "height_8": 1794, "height_9": 2050, "height_10": 2306,
                                          "height_11": 2562}
-
         self.vertical_windspeed_dic = {"height_1": 4, "height_2": 260, "height_3": 516, "height_4": 772,
                                          "height_5": 1028, "height_6": 1284,
                                          "height_7": 1540, "height_8": 1796, "height_9": 2052, "height_10": 2308,
                                          "height_11": 2564}
-
         self.wind_direction_dic = {"height_1": 6, "height_2": 262, "height_3": 518, "height_4": 774,
                                          "height_5": 1030, "height_6": 1286,
                                          "height_7": 1542, "height_8": 1798, "height_9": 2054, "height_10": 2310,
                                          "height_11": 2566}
-
         self.heights_dic = {"height_1": 8202, "height_2": 8204, "height_3": 8206, "height_4": 8208, "height_5": 8210,
                             "height_6": 8212, "height_7": 8214,
                             "height_8": 8216, "height_9": 8218, "height_10": 8220, "height_11": 8224}
-
         self.reference_dic = {"height_1": 0, "height_2": 256, "height_3": 512, "height_4": 768, "height_5": 1024,
                               "height_6": 1280, "height_7": 1536,
                               "height_8": 1792, "height_9": 2048, "height_10": 2304, "height_11": 2560}
-
         self.height_list = ["height_1", "height_2", "height_3", "height_4", "height_5", "height_6", "height_7",
                             "height_8", "height_9", "height_10", "height_11"]
 
+        # ????
         self.vertical_windspeed_1 = None
         self.horizontal_windspeed_1 = None
         self.wind_direction_1 = None
