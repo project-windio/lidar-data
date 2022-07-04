@@ -289,6 +289,7 @@ class Lidar():
             else:
                 self.timestamp_dic["TS_bottom"] = self.hex_to_float(self.timestampBottom[0],self.timestampBottom[1])
         timestamp_add = self.timestamp_dic["TS_top"] + self.timestamp_dic["TS_bottom"]
+        print("timestamp_add",timestamp_add)
 
         year_stamp = timestamp_add / 60 / 60 / 24 / 31 / 12
         year_cal = str(year_stamp).split(".")
@@ -310,16 +311,24 @@ class Lidar():
         second = sec_cal[0]
 
         tz = timezone(timedelta(hours=0))
+        day_in_month = calendar.monthrange(int(year),int(month))
         #since the lidar does not output a conventional Unix timestamp the calculation returns, on the 31 of the month, a Value Error.
         #To counter this problem the exception decreases the month by one and the day gets increased by 31.
         try:
             self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second), tzinfo=tz)
             return self.timestamp
         except ValueError:
-            month = int(month) -1
-            day = int(day) +31
-            self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second), tzinfo=tz)
-            return self.timestamp
+            if day_in_month == 30:
+                month = int(month) - 1
+                day = int(day) + 31
+                self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second), tzinfo=tz)
+                return self.timestamp
+            elif day_in_month == 31:
+                day = int(day) + 1
+                self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second), tzinfo=tz)
+                return self.timestamp
+
+
 
     def cal_date(self,factor, decimal):
         """
@@ -338,7 +347,7 @@ class Lidar():
             returning the remaining value as a list
             Shape: len = 2
         """
-        stamp = float("0." + str(decimal[1])) * factor
+        stamp = round(float("0." + str(decimal[1])), 8) * factor
         cal = str(stamp).split(".")
         return cal
 
