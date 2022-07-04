@@ -13,10 +13,8 @@ import calendar
 class Lidar():
     def __init__(self):
         """
-
         Using the Modbus capability of the ZX300 Lidar it is possible to extract data by polling data from the
         ZXLidar. To test the functionality of the ZeroMQ implementation it is possible to simulate Lidar data.
-
         """
         try:
             from lidar_data_config import (init, LIDAR_TOPIC)
