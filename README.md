@@ -5,8 +5,7 @@ It is important to be aware that the implemented Modbus function is read only. A
 
 ## Data Structure:
 
-**After receiving the data (using lidar_data.py) the dataset is sent using ZeroMQ. The dataset needs to contain specific parameters to be compatible
-with other services running on the Motion Sensor Box e.g. the fusionlog and the lidar_mqtt.py script.**
+**After receiving the data (using lidar_data.py) the dataset is published internally on Motion Sensor Box using ZeroMQ. The dataset needs to contain specific parameters to be compatible with other services running on the Motion Sensor Box e.g. the fusionlog and the lidar_mqtt.py script.**
 
 ![Data Structure](doc/data_structure.png)
 
