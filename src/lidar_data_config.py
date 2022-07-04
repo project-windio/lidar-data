@@ -1,3 +1,6 @@
+""" Configuration for the script that simulates lidar data ("sim_lidar_data.py") """
+
+
 import argparse
 import json
 import sys
