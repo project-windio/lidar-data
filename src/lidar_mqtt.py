@@ -655,7 +655,7 @@ try:
                         gps_longitude=data[82],timestamp_data_received=str(data[0]),reference=data[2],timestamp_data_generated=str(data[3]),scan_dwell_time=data[83])
             client.publish(mqtt_topic, payload)
         else:
-            print(f'Only use topic "imu" or "ldr" is used, however I received data on topic: {zmq_topic}')
+            print(f'Only use topic "ldr", however I received data on topic: {zmq_topic}')
         continue
 except KeyboardInterrupt:
     client.loop_stop()
