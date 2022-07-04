@@ -13,8 +13,7 @@ import calendar
 class Lidar():
     def __init__(self):
         """
-        Using the Modbus capability of the ZX300 Lidar it is possible to extract data by polling data from the
-        ZXLidar. To test the functionality of the ZeroMQ implementation it is possible to simulate Lidar data.
+        Prepare ZMQ connection.
         """
         try:
             from lidar_data_config import (init, LIDAR_TOPIC)
@@ -23,14 +22,14 @@ class Lidar():
             raise Exception ("failed to import init method or topic")
             sys.exit(-1)
         config = init()
-        self.client = ModbusClient(host=config["modbus_protocol"], port=config["modbus_port"], auto_open=True)
+        #self.client = ModbusClient(host=config["modbus_protocol"], port=config["modbus_port"], auto_open=True)
         self.zmq_connection= f'{config["ipc_protocol"]}:{config["ipc_port"]}'
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PUB)
 
-    def initiate_zmq_connection(self):
+    def bind_zmq_connection(self):
         """
-        Initiating a zmq connection for intern communication. The data extracted from the lidar
+        Bind a zmq connection for intern communication. The data extracted from the lidar
         is published and is received by lidar_mqtt.py.
         """
 
@@ -42,11 +41,10 @@ class Lidar():
             logging.fatal('failed to connect to zeroMQ socket for IPC')
             sys.exit(-1)
         logging.debug(f'connected to zeroMQ IPC socket')
-        logging.debug(f'entering endless loop')
 
-    def publishing_data(self):
+    def publish_data(self):
         """
-        All data is published using ZeroMQ.
+        Publish all data using ZeroMQ.
         """
         try:
             lidar_data = self.socket.send_multipart([self.lidar_topic,pickle.dumps(self.data)])
@@ -60,23 +58,26 @@ class Lidar():
         all data is received, computed and later sent using ZeroMQ.
         The data is temporarily stored in a list (self.data)
         """
+        logging.debug(f'entering endless loop')
         while True:
             self.data = self.gen_lidar_message()
-            print(self.data)
-            self.publishing_data()
+            #print(self.data)
+            self.publish_data()
             self.data.clear()
-            sleep(2)
+            sleep(2) # Wait for 2 seconds.
 
     def gen_lidar_message(self):
         """
-        This method generates values to simulate real values from the lidar.
+        This method generates values to simulate values from the ZX lidar.
 
         Return
         ------
         list
-            data contains all lidar data
+            data that contains all lidar data
             Shape: len = 84
         """
+        
+        # ToDo: Compute-generate hard-coded time stamp, vary measurement values by using random numbers (e.g. value + random_mumber or value * random_number)
         data =  [str(calendar.timegm(datetime.fromtimestamp(timestamp=time(), tz=timezone.utc).utctimetuple())), uptime.uptime(), 2027075.0, '2022-06-15 08:49:22+00:00',
                  200.0, 2027075.0, 1655282962, 3.4464, 0.2488, 190.9362, 180.0, 2027076.0,
                  1655282963, 4.0556, -0.0248, 183.9466, 160.0, 2027077.0, 1655282964, 3.9232, -0.0083, 185.4916, 140.0, 2027078.0, 1655282965, 3.8143, 0.038,
@@ -86,11 +87,8 @@ class Lidar():
                  0.0, 41.9, 0.0, 213.2, 38.0, 38.0, 23.0, 53.11, 8.86, 1.0]
         return data
 
-    def end(self):
-        print(f"connection to lidar is terminated, program shutdown ....")
 
 if __name__ == "__main__":
     Fx = Lidar()
-    Fx.initiate_zmq_connection()
+    Fx.bind_zmq_connection()
     Fx.run()
-    Fx.end()
