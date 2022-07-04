@@ -185,7 +185,7 @@ class Lidar():
             else:
                 self.data.append(self.get_lidar_data(self.vertical_windspeed_dic[self.height_list[self.counter]]))
         except Exception as e:
-            self.data.append("unable to receive value for this height")
+            self.data.append(None)
             print(f"unable to receive value for this height(vertical_windspeed):{e}")
 
     def polling_wind_directions(self):
@@ -198,7 +198,7 @@ class Lidar():
             else:
                 self.data.append(self.get_lidar_data(self.wind_direction_dic[self.height_list[self.counter]]))
         except Exception as e:
-            self.data.append("unable to receive value for this height")
+            self.data.append(None)
             print(f"unable to receive value for this height(wind direction):{e}")
 
     def polling_horinzontal_windspeeds(self):
@@ -211,7 +211,7 @@ class Lidar():
             else:
                 self.data.append(self.get_lidar_data(self.horizontal_windspeed_dic[self.height_list[self.counter]]))
         except Exception as e:
-                self.data.append("unable to receive value for this height")
+                self.data.append(None)
                 print(f"unable to receive value for this height(horizontal_windspeed):{e}")
 
     def polling_reference(self):
@@ -228,7 +228,7 @@ class Lidar():
                 self.data.append(self.current_reference)
 
         except Exception as e:
-                self.data.append("unable to receive reference number for this height")
+                self.data.append(None)
                 print(f"unable to receive reference number for this height(horizontal_windspeed):{e}")
 
 
