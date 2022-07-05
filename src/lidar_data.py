@@ -13,7 +13,8 @@ import calendar
 
 class Lidar():
     """
-    X
+    Using the Modbus capability of the ZX300 it is possible to receive data using the python module "pyModbus".
+    The received data is stored in a list and send internally using ZMQ.
     """
     
     def __init__(self):
@@ -54,7 +55,9 @@ class Lidar():
         self.height_list = ["height_1", "height_2", "height_3", "height_4", "height_5", "height_6", "height_7",
                             "height_8", "height_9", "height_10", "height_11"]
 
-        # ????
+        #since the only way to know whether a new data set is available is to compare the reference number, it is
+        #necessary to store the values for the first height in variables because the values for the first height
+        #are refreshed at the same time as the reference number
         self.vertical_windspeed_1 = None
         self.horizontal_windspeed_1 = None
         self.wind_direction_1 = None
@@ -67,7 +70,7 @@ class Lidar():
         self.data = [] * 84
         self.counter = 0
 
-    def building_connection(self):
+    def build_connection(self):
         """
         Building connection to the ZX300 using Modbus TCP/IP.
         """
@@ -79,10 +82,10 @@ class Lidar():
             print(f"unable to connect to lidar:{e}")
             sys.exit(0)
 
-    def initiate_zmq_connection(self):
+    def bind_zmq_connection(self):
         """
-        Initiating a ZeroMQ connection for intern communication. The data extracted from the lidar
-        is published and is received by lidar_mqtt.py.
+        Bind a ZeroMQ connection for intern communication. The data extracted from the lidar
+        is published and gets received by the script lidar_mqtt.py running on the motion sensor box.
         """
 
         logging.debug(f'binding to {self.zmq_connection} for zeroMQ IPC')
@@ -95,9 +98,9 @@ class Lidar():
         logging.debug(f'connected to zeroMQ IPC socket')
         logging.debug(f'entering endless loop')
 
-    def publishing_data(self):
+    def publish_data(self):
         """
-        All data is published using ZeroMQ.
+        All data is published internally using ZeroMQ.
         """
         LIDAR_TOPIC = "ldr".encode('utf-8')  # setting the Topic for ZMQ
         try:
@@ -126,10 +129,9 @@ class Lidar():
     def run(self):
         """
         The run function is the main method for receiving and sending data. Everytime the reference of a dataset changes
-        all data in the important registers is received, computed and later sent using ZeroMQ. The reference changes
-        each time when the lidar has made a full measurement (meaning all heights and the corresponding values
-        are measured).
-        The data is temporarily stored in a list (self.data)
+        all data in the important registers is received, computed and later sent internally using ZeroMQ. The reference
+        changes each time when the lidar has made a full measurement (meaning all heights and the corresponding values
+        are measured). The data is temporarily stored in a list (self.data)
         """
         self.first_data = True
         while self.client.open() == True:
@@ -154,7 +156,7 @@ class Lidar():
                 self.counter = 0
                 while self.counter < self.number_of_heights:
                     self.data.append(self.heights_list[self.counter])
-                    self.polling_reference()
+                    self.poll_reference()
                     self.individual_timestamp()
                     self.polling_horinzontal_windspeeds()
                     self.polling_vertical_windspeeds()
@@ -166,13 +168,13 @@ class Lidar():
                     if self.data[i] == 9999.0 or self.data[i] == 9998:
                         self.data[i] = None
 
-                self.publishing_data()
+                self.publish_data()
                 self.data.clear()
                 self.reference = self.referenceCur
 
     def polling_vertical_windspeeds(self):
         """
-        Appends the value for the vertical wind speeds at the given height to the list.
+        Appends the value for the vertical wind speed at the given height to the list.
         """
         try:
             if self.counter == 0:
@@ -198,7 +200,7 @@ class Lidar():
 
     def polling_horinzontal_windspeeds(self):
         """
-        Appends the value for the horizontal wind speeds at the given height to the list.
+        Appends the value for the horizontal wind speed at the given height to the list.
         """
         try:
             if self.counter == 0:
@@ -209,9 +211,9 @@ class Lidar():
                 self.data.append(None)
                 print(f"unable to receive value for this height(horizontal_windspeed):{e}")
 
-    def polling_reference(self):
+    def poll_reference(self):
         """
-        Appending an individual reference number to the list (self.data) for each measurement made by the lidar .
+        Append an individual reference number to the list (self.data) for each measurement made by the lidar .
         Each height gets a unique reference number.
         """
         try:
@@ -229,7 +231,7 @@ class Lidar():
 
     def output_met_station(self):
         """
-        All important data measured by the met station and data concerning the status of the lidar is polled.
+        Poll all important data which is measured by the met station and data concerning the status of the lidar.
 
         Return
         ------
@@ -260,7 +262,7 @@ class Lidar():
         """
         Since the timestamp is 32 bit and the mantissa is only the size of 23 bits, the information
         for the timestamp is split into two registers.
-        These two registers are combined and processed subsequently
+        These two registers are combined and processed subsequently.
 
          Return
          ------
@@ -426,8 +428,8 @@ class Lidar():
 
 if __name__ == "__main__":
     Fx = Lidar()
-    Fx.initiate_zmq_connection()
-    Fx.building_connection()
+    Fx.bind_zmq_connection()
+    Fx.build_connection()
     Fx.start_up()
     Fx.run()
     Fx.end()
