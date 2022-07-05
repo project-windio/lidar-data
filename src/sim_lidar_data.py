@@ -13,7 +13,7 @@ import calendar
 class Lidar():
     def __init__(self):
         """
-        Prepare ZMQ connection.
+        Prepare ZMQ connection and importing necessary elements of lidar_data_config.py
         """
         try:
             from lidar_data_config import (init, LIDAR_TOPIC)
@@ -54,7 +54,7 @@ class Lidar():
 
     def run(self):
         """
-        The run function is the main method for receiving and sending data. Everytime 2 seconds
+        The run function is the main method for receiving and sending data. Every 2 seconds
         all data is received, computed and later sent using ZeroMQ.
         The data is temporarily stored in a list (self.data)
         """
