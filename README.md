@@ -3,7 +3,7 @@
 The register numbers are based on the Modbus Guide by the manufacturer ZXLidar. 
 It is important to be aware that the implemented Modbus function is read only. Any changes to the Lidar unit must be made using the Waltz Software.**
 
-## Data Structure:
+## Data Structure
 
 **After receiving the data (using lidar_data.py) the dataset is published internally on Motion Sensor Box using ZeroMQ. The dataset needs to contain specific parameters to be compatible with other services running on the Motion Sensor Box e.g. the fusionlog and the lidar_mqtt.py script.**
 
@@ -11,7 +11,7 @@ It is important to be aware that the implemented Modbus function is read only. A
 
 **lidar_mqtt.py is used to publish the lidar data to a server using the MQTT protocol.**
 
-## Glossary:
+## Glossary
 
 **timestamp_data_received** = this time stamp is genearted by the motion sensor box when a new data set is received
 
@@ -63,7 +63,7 @@ It is important to be aware that the implemented Modbus function is read only. A
 **scan_dwell_time** = the time it takes to measure all wind speeds and parameters at one height
 
 
-## Error Codes:
+## Error Codes
 **If the Lidar can not measure a specific value, the Modbus register contains error codes instead. Explanation
 is as followed:**
 
