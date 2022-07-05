@@ -28,7 +28,7 @@ class Lidar():
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PUB)
         
-        # Dictionary for the Modbus register numbers. Some of the register numbers can be found in ZX300's Modbus Guide
+        # Dictionaries for the Modbus register numbers. Some register numbers can be found in ZX300's Modbus Guide
         # ("xxx.png" and readme.md) and some were found by reverse engineering.
         self.met_station_dic = {"temperature": 20, "battery": 18, "airPressure": 22, "windspeed": 32, "tilt": 42,
                                 "humidity": 24, "raining": 34, "met_wind_direction": 10,
@@ -55,7 +55,7 @@ class Lidar():
         self.height_list = ["height_1", "height_2", "height_3", "height_4", "height_5", "height_6", "height_7",
                             "height_8", "height_9", "height_10", "height_11"]
 
-        #since the only way to know whether a new data set is available is to compare the reference number, it is
+        #since the only way to know whether a new data set is available is to compare the reference numbers, it is
         #necessary to store the values for the first height in variables because the values for the first height
         #are refreshed at the same time as the reference number
         self.vertical_windspeed_1 = None
@@ -72,7 +72,7 @@ class Lidar():
 
     def build_connection(self):
         """
-        Building connection to the ZX300 using Modbus TCP/IP.
+        Build connection to the ZX300 using Modbus TCP/IP.
         """
 
         try:
@@ -100,7 +100,7 @@ class Lidar():
 
     def publish_data(self):
         """
-        All data is published internally using ZeroMQ.
+        Publish all data internally using ZeroMQ.
         """
         LIDAR_TOPIC = "ldr".encode('utf-8')  # setting the Topic for ZMQ
         try:
@@ -213,7 +213,7 @@ class Lidar():
 
     def poll_reference(self):
         """
-        Append an individual reference number to the list (self.data) for each measurement made by the lidar .
+        Append an individual reference number to the list (self.data) for each measurement made by the ZX300 .
         Each height gets a unique reference number.
         """
         try:
@@ -231,7 +231,7 @@ class Lidar():
 
     def output_met_station(self):
         """
-        Poll all important data which is measured by the met station and data concerning the status of the lidar.
+        Poll all important data which is measured by the met station and data concerning the status of the ZX300.
 
         Return
         ------
@@ -309,8 +309,8 @@ class Lidar():
 
         tz = timezone(timedelta(hours=0))
         day_in_month = calendar.monthrange(int(year),int(month))
-        #since the lidar does not output a conventional Unix timestamp the calculation returns, on the 31 of the month, a Value Error.
-        #To counter this problem the exception decreases the month by one and the day gets increased by 31.
+        #since the ZX300 does not output a conventional Unix timestamp the month shift needs to be done by either
+        #adding 1 to the day or decreasing the month and adding 31 to the day deppending on the number of days in a month
         try:
             self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second), tzinfo=tz)
             return self.timestamp
@@ -329,7 +329,7 @@ class Lidar():
 
     def cal_date(self,factor, decimal):
         """
-        Small calculation for date calculation.
+        multiply remaining decimal with factor (depending on the calculation) and splitting the result
 
         Parameters
         ----------
@@ -351,10 +351,10 @@ class Lidar():
 
     def individual_timestamp(self):
         """
-        Since the lidar does not measure all horizontal wind speeds at the same time, individual
+        Since the ZX300 does not measure all horizontal wind speeds at the same time, individual
         timestamps are calculated, based on the scan_dwell_time. The scan_dwell_time is added to the
         timestamp of the first timestamp.
-        The lidar outputs the highest placed height in the beginning and iterates through the rest
+        The ZX300 outputs the highest placed height in the beginning and iterates through the rest
         from highest to lowest.
         """
         timeobject = self.timestamp + timedelta(seconds=self.counter)
@@ -363,9 +363,8 @@ class Lidar():
 
     def get_lidar_data(self, attribute):
         """
-        get_lidar_data is used to poll data from the lidar unit based on the register number.
+        poll data from the ZX300 based on the register number.
         'hex' is a list which contains two decimal numbers which represent the data contained in the specific register.
-        self.dec_to_float() converts the data into interpretable form.
 
         Parameter
         --------
@@ -387,7 +386,7 @@ class Lidar():
 
     def hex_to_float(self, hex0, hex1):
         """
-        The method dec_to_float converts the registers (decimal_numbers) to hex/decimal numbers.
+        dec_to_float converts the registers (decimal_numbers) to hex/decimal numbers.
         The two hex/decimal numbers are than combined. It is important to note, that
         all data is stored in big endian format.
         The combined hex/decimal number is later translated to binary code which is than interpreted as a single
@@ -396,14 +395,14 @@ class Lidar():
         Parameter
         ---------
         hex0: float
-              value contained in the first register
+              first value contained in the register
         hex1: float
-              value contained in the second register
+              second contained in the register
 
         Return
         ------
         float
-            calculated value contained in the two neighbouring registers
+            calculated value contained in the register
             Shape: 1-dimensional
         """
         hexA_long = hex(hex0)
