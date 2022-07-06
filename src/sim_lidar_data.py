@@ -16,7 +16,7 @@ class Lidar():
         Prepare ZMQ connection and importing necessary elements of lidar_data_config.py
         """
         try:
-            from lidar_data_config import (init, LIDAR_TOPIC)
+            from sim_lidar_data_config import (init, LIDAR_TOPIC)
             self.lidar_topic = LIDAR_TOPIC
         except ImportError:
             raise Exception ("failed to import init method or topic")
