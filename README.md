@@ -80,7 +80,7 @@ any extraordinary values are hidden, the value 9999 and 9998 are replaced with t
 ## Modbus Registers
 
 **The Modbus registers may be found in the ModbusGuide by the manufacturer ZXLidar. Not all registers displayed 
-in the ModbusGuide are polled in the script "lidar_data.py". Some other registers were found by reverse engineering
+in the ModbusGuide are polled in the script [lidar_data.py](src/lidar_data.py). Some other registers were found by reverse engineering
 these include the register numbers of the vertical wind speeds and the wind direction for each height.
 These register numbers may be looked up in the "lidar_data.py" script.**
 
