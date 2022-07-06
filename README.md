@@ -77,7 +77,7 @@ is as followed:**
 **Since the data is streamed to a remote server which can only display the data properly if 
 any extraordinary values are hidden, the value 9999 and 9998 are replaced with the value None**
 
-##Modbus Registers
+## Modbus Registers
 
 **The Modbus registers may be found in the ModbusGuide by the manufacturer ZXLidar. Not all registers displayed 
 in the ModbusGuide are polled in the script "lidar_data.py". Some other registers were found by reverse engineering
@@ -85,3 +85,6 @@ these include the register numbers of the vertical wind speeds and the wind dire
 These register numbers may be looked up in the "lidar_data.py" script.**
 
 ![Modbus registers](doc/Modbus_registers_1.png)
+![Modbus registers](doc/Modbus_registers_2.png)
+![Modbus registers](doc/Modbus_registers_3.png)
+![Modbus registers](doc/Modbus_registers_4.png)
