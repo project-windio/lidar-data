@@ -29,7 +29,7 @@ class Lidar():
         self.socket = self.context.socket(zmq.PUB)
         
         # Dictionaries for the Modbus register numbers. Some register numbers can be found in ZX300's Modbus Guide
-        # ("xxx.png" and readme.md) and some were found by reverse engineering.
+        # ("Modbus_registers_x.png" and README.md) and some were found by reverse engineering.
         self.met_station_dic = {"temperature": 20, "battery": 18, "airPressure": 22, "windspeed": 32, "tilt": 42,
                                 "humidity": 24, "raining": 34, "met_wind_direction": 10,
                                 "pod_upper_temperature": 26, "pod_lower_temperature": 28, "pod_humidity": 30,
