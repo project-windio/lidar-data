@@ -27,6 +27,8 @@ class Lidar():
         self.zmq_connection= f'{config["ipc_protocol"]}:{config["ipc_port"]}'
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PUB)
+        self.counter = 0
+        self.time_to_wait = 5
 
     def bind_zmq_connection(self):
         """
@@ -55,7 +57,7 @@ class Lidar():
 
     def run(self):
         """
-        The run function is the main method for receiving and sending data. Every 2 seconds
+        The run function is the main method for receiving and sending data. Every 5 seconds
         all data is received, computed and later sent using ZeroMQ.
         The data is temporarily stored in a list (self.data)
         """
@@ -65,7 +67,9 @@ class Lidar():
             print(self.data)
             self.publish_data()
             self.data.clear()
-            sleep(2) # Wait for 2 seconds.
+            sleep(5) # simulating the wait for next data set
+            self.counter += 1
+            self.time_to_wait += 5
 
     def gen_lidar_message(self):
         """
@@ -77,15 +81,16 @@ class Lidar():
             data that contains all lidar data
             Shape: len = 84
         """
-        
-        # ToDo: Compute-generate hard-coded time stamp, vary measurement values by using random numbers (e.g. value + random_mumber or value * random_number)
-        data =  [str(calendar.timegm(datetime.fromtimestamp(timestamp=time(), tz=timezone.utc).utctimetuple())), uptime.uptime(), 2027075.0, '2022-06-15 08:49:22+00:00',
-                 200.0, 2027075.0, 1655282962, round(uniform(0,5),4), round(uniform(-2,2),4), round(uniform(180,200),4), 180.0, 2027076.0,
-                 1655282963, round(uniform(0,5),4),round(uniform(-2,2),4), round(uniform(180,200),4), 160.0, 2027077.0, 1655282964, round(uniform(0,5),4), round(uniform(-2,2),4),round(uniform(180,200),4), 140.0, 2027078.0, 1655282965, round(uniform(0,5),4),round(uniform(-2,2),4),
-                 round(uniform(180,200),4), 120.0, 2027079.0, 1655282966, round(uniform(0,5),4), round(uniform(-2,2),4), round(uniform(180,200),4), 100.0, 2027080.0, 1655282967, round(uniform(0,5),4), round(uniform(-2,2),4), round(uniform(180,200),4), 80.0, 2027081.0,
-                 1655282968, round(uniform(0,5),4), round(uniform(-2,2),4),round(uniform(180,200),4), 60.0, 2027082.0, 1655282969, round(uniform(0,5),4), round(uniform(-2,2),4),round(uniform(180,200),4), 40.0, 2027083.0, 1655282970, round(uniform(0,5),4), round(uniform(-2,2),4),
-                 round(uniform(180,200),4), 20.0, 2027084.0, 1655282971, round(uniform(0,5),4), round(uniform(-2,2),4),round(uniform(180,200),4), 0.0, 2027085.0, 1655282972, round(uniform(0,5),4), round(uniform(-2,2),4),round(uniform(180,200),4), 22.6, 12.28, 1021.6, 0.31,
-                 0.0, 41.9, 0.0, 213.2, 38.0, 38.0, 23.0, 53.11, 8.86, 1.0]
+
+        data =  [str(calendar.timegm(datetime.fromtimestamp(timestamp=time(), tz=timezone.utc).utctimetuple())), uptime.uptime(), 2027075.0 + self.counter, str(datetime.fromtimestamp(1655282962 + self.time_to_wait, tz=timezone.utc)),
+                 200.0, 2027075.0 + self.counter, 1655282962 + self.time_to_wait, round(uniform(0,5),4), round(uniform(-2,2),4), round(uniform(180,200),4), 180.0, 2027076.0 + self.counter,
+                 1655282963 + self.time_to_wait, round(uniform(0,5),4),round(uniform(-2,2),4), round(uniform(180,200),4), 160.0, 2027077.0 + self.counter, 1655282964 + self.time_to_wait, round(uniform(0,5),4), round(uniform(-2,2),4),round(uniform(180,200),4), 140.0,
+                 2027078.0 + self.counter, 1655282965 + self.time_to_wait, round(uniform(0,5),4),round(uniform(-2,2),4),round(uniform(180,200),4), 120.0, 2027079.0 + self.counter, 1655282966 + self.time_to_wait, round(uniform(0,5),4), round(uniform(-2,2),4),
+                 round(uniform(180,200),4), 100.0, 2027080.0 + self.counter, 1655282967 + self.time_to_wait, round(uniform(0,5),4), round(uniform(-2,2),4), round(uniform(180,200),4), 80.0, 2027081.0 + self.counter,
+                 1655282968 + self.time_to_wait, round(uniform(0,5),4), round(uniform(-2,2),4),round(uniform(180,200),4), 60.0, 2027082.0 + self.counter, 1655282969 + self.time_to_wait, round(uniform(0,5),4), round(uniform(-2,2),4),
+                 round(uniform(180,200),4), 40.0, 2027083.0 + self.counter, 1655282970 + self.time_to_wait, round(uniform(0,5),4), round(uniform(-2,2),4),round(uniform(180,200),4), 20.0, 2027084.0 + self.counter,
+                 1655282971 + self.time_to_wait, round(uniform(0,5),4), round(uniform(-2,2),4),round(uniform(180,200),4), 0.0, 2027085.0 + self.counter, 1655282972 + self.time_to_wait, round(uniform(0,5),4), round(uniform(-2,2),4),
+                 round(uniform(180,200),4), round(uniform(20,20.5),2) , round(uniform(12.28,12.27),2),round(uniform(1021.27,1023.3),2), round(uniform(0.31,0.46),2),0.0, round(uniform(41.27,43),2), 0.0, round(uniform(213.2,215.2),2), round(uniform(38.1,39.1),2), round(uniform(38.1,39.1),2), 23.0, 53.11, 8.86, 1.0]
         return data
 
 
