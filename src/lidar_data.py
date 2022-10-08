@@ -143,7 +143,6 @@ class Lidar():
                     self.wind_direction_1 = self.get_lidar_data(self.wind_direction_dic[self.height_list[0]])
                     self.horizontal_windspeed_1 = self.get_lidar_data(self.horizontal_windspeed_dic[self.height_list[0]])
                     self.timestamp = self.get_lidar_time_stamp()
-                    #print(self.timestamp)
                     self.first_data = False
                 else:
                     sleep(0.2)
@@ -286,43 +285,66 @@ class Lidar():
             else:
                 self.timestamp_dic["TS_bottom"] = self.hex_to_float(self.timestampBottom[0],self.timestampBottom[1])
         timestamp_add = self.timestamp_dic["TS_top"] + self.timestamp_dic["TS_bottom"]
-        print("timestamp_add",timestamp_add)
+        #print("timestamp_add",timestamp_add)
 
         year_stamp = timestamp_add / 60 / 60 / 24 / 31 / 12
         year_cal = str(year_stamp).split(".")
         year = "20" + str(year_cal[0])
-
+        # print(year,"year")
         month_cal = self.cal_date(12, year_cal)
-        month = month_cal[0]
-
+        month = round(int(month_cal[0]), 8)
+        # print(month,"month")
         day_cal = self.cal_date(31, month_cal)
         day = day_cal[0]
-
+        # print(day,"day")
         hour_cal = self.cal_date(24, day_cal)
         hour = hour_cal[0]
-
+        # print(hour,"hour")
         minute_cal = self.cal_date(60, hour_cal)
         minute = minute_cal[0]
-
+        # print(minute,"minute")
         sec_cal = self.cal_date(60, minute_cal)
         second = sec_cal[0]
-
+        # print(second,"second")
         tz = timezone(timedelta(hours=0))
-        day_in_month = calendar.monthrange(int(year),int(month))
-        #since the ZX300 does not output a conventional Unix timestamp the month shift needs to be done by either
-        #adding 1 to the day or decreasing the month and adding 31 to the day deppending on the number of days in a month
+
+        try:
+            day_in_month = calendar.monthrange(int(year), int(month) - 1)[1]
+        except:
+            day_in_month = None
+            pass
+
         try:
             self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second), tzinfo=tz)
             return self.timestamp
+
         except ValueError:
-            if day_in_month == 30:
+            if int(month) == 0:
+                year = int(year) - 1
+                month = int(month) + 12
+                day = int(day) + 1
+                self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second),
+                                          tzinfo=tz)
+                return self.timestamp
+
+            if int(day) == 0 and int(month) == 0:
+                day = int(day) + 31
+                self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second),
+                                          tzinfo=tz)
+                return self.timestamp
+
+            if day_in_month == 31 and int(month) != 2:
                 month = int(month) - 1
                 day = int(day) + 31
-                self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second), tzinfo=tz)
+                self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second),
+                                          tzinfo=tz)
                 return self.timestamp
-            elif day_in_month == 31:
-                day = int(day) + 1
-                self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second), tzinfo=tz)
+
+            if day_in_month == 31 and int(month) == 2:
+                month = 3
+                day = 1
+                self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second),
+                                          tzinfo=tz)
                 return self.timestamp
 
 
@@ -345,7 +367,8 @@ class Lidar():
             Shape: len = 2
         """
         stamp = round(float("0." + str(decimal[1])), 8) * factor
-        cal = str(stamp).split(".")
+        stamp_new = f'{stamp:.10f}'
+        cal = str(stamp_new).split(".")
         return cal
 
 
