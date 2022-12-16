@@ -310,11 +310,13 @@ class Lidar():
 
         try:
             day_in_month = calendar.monthrange(int(year), int(month) - 1)[1]
+
+
         except:
             day_in_month = None
             pass
-
         try:
+
             self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second), tzinfo=tz)
             return self.timestamp
 
@@ -322,27 +324,37 @@ class Lidar():
             if int(month) == 0:
                 year = int(year) - 1
                 month = int(month) + 12
-                day = int(day) + 1
+                if int(day) == 0:
+                    day = 1
                 self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second),
                                           tzinfo=tz)
                 return self.timestamp
 
             if int(day) == 0 and int(month) == 0:
+                print("IF 2 ")
                 day = int(day) + 31
                 self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second),
                                           tzinfo=tz)
                 return self.timestamp
 
-            if day_in_month == 31 and int(month) != 2:
+            if day_in_month == 31 and int(month) != 3:
                 month = int(month) - 1
                 day = int(day) + 31
                 self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second),
                                           tzinfo=tz)
                 return self.timestamp
 
-            if day_in_month == 31 and int(month) == 2:
-                month = 3
+            if day_in_month == 31 and int(month) == 3:
+                month = 2
                 day = 1
+                self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second),
+                                          tzinfo=tz)
+                return self.timestamp
+
+            if int(month) == 1 and int(day) == 0:
+                month = 12
+                year = int(year) - 1
+                day = 31
                 self.timestamp = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second),
                                           tzinfo=tz)
                 return self.timestamp
