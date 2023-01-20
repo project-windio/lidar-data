@@ -1,12 +1,14 @@
 # Lidar_Data
-**Using this code it is possible to extract data using Modbus TCP/IP from the Lidar unit. This data gets interpreted and may be used for different purposes such as the digital twin (IoT application).
+Using this code it is possible to extract data using Modbus TCP/IP from the Lidar unit. This data gets interpreted and may be used for different purposes such as the digital twin (IoT application).
 The register numbers are based on the Modbus Guide by the manufacturer ZXLidar. 
-It is important to be aware that the implemented Modbus function is read only. Any changes to the Lidar unit must be made using the Waltz Software.**
+It is important to be aware that the implemented Modbus function is read only. Any changes to the Lidar unit must be made using the Waltz Software.
+
+Additional information on how the lidar is used in project WindIO is available in the (private) lidar guide (nextcloud/499_LIDAR_und_Stromversorgung/020_documentation/Lidar_Guide)
 
 ## Data Structure
 
-**After receiving the data (using [lidar_data.py](src/lidar_data.py)) the dataset is published internally on Motion Sensor Box using ZeroMQ. 
-The dataset needs to contain specific parameters to be compatible with other services running on the Motion Sensor Box e.g. the fusionlog and the lidar_mqtt.py script.**
+After receiving the data (using [lidar_data.py](src/lidar_data.py)) the dataset is published internally on Motion Sensor Box using ZeroMQ. 
+The dataset needs to contain specific parameters to be compatible with other services running on the Motion Sensor Box e.g. the fusionlog and the lidar_mqtt.py script.
 
 ![Data Structure](doc/data_structure.png)
 
@@ -31,7 +33,7 @@ The dataset needs to contain specific parameters to be compatible with other ser
 						 iteration once, the individual_reference_x corresponds only to this 
 						 sub data set. This reference is used for the calculation of the individual_timestamp_x
 						 
-**individual_timestamp_x** = time stapm of a wind speed measurement height dataset. The individual_timestamp_x is not received from the lidar station. It is calculated as followed: The time it takes to measure one height (usually 1 second) is multiplied by the place in the order of heights (measured from highest to lowest) and then added to the timestamp received by the lidar unit.
+**individual_timestamp_x** = time stamp of a wind speed measurement height dataset. The individual_timestamp_x is not received from the lidar station. It is calculated as followed: The time it takes to measure one height (usually 1 second) is multiplied by the place in the order of heights (measured from highest to lowest) and then added to the timestamp received by the lidar unit.
 						 
 **horizontal_windspeed_x** = the horizontal wind speed at the given height measured in m/s
 
@@ -80,10 +82,10 @@ any extraordinary values are hidden, the value 9999 and 9998 are replaced with t
 
 ## Modbus Registers
 
-**The Modbus registers may be found in the ModbusGuide by the manufacturer ZXLidar. Not all registers displayed 
+The Modbus registers may be found in the ModbusGuide by the manufacturer ZXLidar. Not all registers displayed 
 in the ModbusGuide are polled in the script [lidar_data.py](src/lidar_data.py). Some other registers were found by reverse engineering,
 these include the register numbers of the vertical wind speeds and the wind direction for each height.
-These register numbers may be looked up in the [lidar_data.py](src/lidar_data.py) script.**
+These register numbers may be looked up in the [lidar_data.py](src/lidar_data.py) script.
 
 ![Modbus registers](doc/Modbus_registers_1.png)
 ![Modbus registers](doc/Modbus_registers_2.png)
