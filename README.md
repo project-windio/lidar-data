@@ -3,7 +3,7 @@ Using this code it is possible to extract data using Modbus TCP/IP from the Lida
 The register numbers are based on the Modbus Guide by the manufacturer ZXLidar. 
 It is important to be aware that the implemented Modbus function is read only. Any changes to the Lidar unit must be made using the Waltz Software.
 
-Additional information on how the lidar is used in project WindIO is available in the (private) lidar guide (nextcloud/499_LIDAR_und_Stromversorgung/020_documentation/Lidar_Guide)
+Additional information on how the lidar is used in project WindIO is available in the private lidar guide (nextcloud/499_LIDAR_und_Stromversorgung/020_documentation/Lidar_Guide).
 
 ## Data Structure
 
