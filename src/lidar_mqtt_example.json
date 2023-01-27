@@ -1,0 +1,11 @@
+// This is an example of the config file, showing the required file structure (the true config file shall stay secret and is not on GIT).
+// To use it in production, delete these two comment lines, fill in the values and rename this file "lidar_mqtt.json"
+{
+    "print": true,
+    "url": "windio-contact.northeurope.cloudapp.azure.com",
+    "port": 0,
+    "user": "",
+    "password": "",
+    "edge_id": "",
+    "device_id": ""
+}
