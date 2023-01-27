@@ -596,6 +596,7 @@ with open('/home/pi/motion-sensor-box/src/lidar/src/lidar-mqtt.json') as json_fi
     edge_id = config['edge_id']
     device_id = config['device_id']
     mqtt_topic = "ppmpv3/3/DDATA/" + edge_id + "/" + device_id
+    do_print = config['print']
 
 client = mqtt.Client()
 print("Working with user: " + user)
@@ -653,6 +654,8 @@ try:
                         temperature=data[70],battery=data[71],airPressure=data[72],ground_windspeed=data[73],tilt=data[74],humidity=data[75],raining=data[76],
                         met_wind_direction=data[77],pod_upper_temperature=data[78],pod_lower_temperature=data[79],pod_humidity=data[80],gps_latitude=data[81],
                         gps_longitude=data[82],timestamp_data_received=str(data[0]),reference=data[2],timestamp_data_generated=str(data[3]),scan_dwell_time=data[83])
+            if do_print:
+                print(payload)
             client.publish(mqtt_topic, payload)
         else:
             print(f'Only use topic "ldr", however I received data on topic: {zmq_topic}')
