@@ -601,8 +601,7 @@ with open('/home/pi/motion-sensor-box/src/lidar/src/lidar-mqtt.json') as json_fi
 client = mqtt.Client()
 print("Working with user: " + user)
 client.username_pw_set(user, password)
-client.connect(url, port=port, keepalive=60*60*24*3) # keepalive: if the broker does not receive a message within 3 days (60*60*24*3 seconds) the broker disconnects the client.
-print("Successfully connected.")
+client.connect(url, port=port, keepalive=0) # keepalive: deactive mechanism (usually: if the broker does not receive a message within X seconds it disconnects the client)
 client.tls_set_context(mqtt_ssl.create_default_context())
 client.loop_start()
 
