@@ -47,13 +47,13 @@ The dataset needs to contain specific parameters to be compatible with other ser
 
 **air pressure** = the air pressure measured by the met station
 
-**windspeed(*met-station*)** = the windspeed measured by the met station (approx. 1.5 m above the ground)
+**windspeed (met-station)** = the windspeed measured by the met station (approx. 1.5 m above the ground)
 
 **tilt** = tilt measured by the met station (if there is nonzero tilt the lidar measures in a line that has an angular offeset to the g acceleration vector)
 
 **humidity** = air humidity
 
-**wind_direction** = wind direction measured at approx. 1.5 m above the ground
+**wind_direction** = wind direction measured by the met station (approx. 1.5 m above the ground)
 
 **pod_upper_temperature** = internal pod temperature as measured by the internal 
 						sensor located near the window
